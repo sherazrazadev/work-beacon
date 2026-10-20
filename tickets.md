@@ -1,0 +1,257 @@
+# Work Beacon — Ticket Index
+
+> **Source (observation only):** https://www.workday.com/ · https://www.workday.com/en-us/homepage.html  
+> **Brand:** Work Beacon · Enterprise HR / Finance / IT platform with a conversational AI agent  
+> **Folder:** `workdayforge/` (repo path only — product name is **Work Beacon**)  
+> **Stack:** Next.js 16 + TypeScript + Tailwind + shadcn/ui  
+> **Auth:** Public only — fake login UI, no real credentials, no captured auth flows  
+> **Scope:** Full site — marketing + login + employee dashboard + AI agent panel  
+> **Brand color:** `#FF6B35` (electric orange)  
+> **Brand voice:** Confident + clean (Stripe / Vercel style)  
+> **Typography:** Expressive non-default stack (no Inter / Roboto / Arial / system-only) — pick in EPIC-00  
+> **Rule:** Own UI + copy. No Workday logos, assets, trademarks, or copied code.
+
+**Work via epics:** see `docs/EPIC-PARTS.md` and `docs/epics/`. This file is the flat ticket map.
+
+---
+
+## EPIC-00 — Recon & Foundation → `docs/epics/EPIC-00-foundation.md`
+
+| ID | Ticket |
+| --- | --- |
+| T00-01 | Capture both Workday URLs (structure, mega-nav, sections, fonts, colors, client libs) → `docs/evidence/` |
+| T00-02 | Write `docs/TARGET.md` (scope, brand, routes, legal boundaries) |
+| T00-03 | Work Beacon brand tokens: `#FF6B35`, voice, fonts, CSS variables |
+| T00-04 | Scaffold Next.js 16 + Tailwind + shadcn/ui |
+| T00-05 | App folders: `app/(marketing)`, `app/(auth)`, `app/(dashboard)`, `components/`, `lib/agent/`, `lib/mock/` |
+| T00-06 | Legal stubs: Privacy, Terms, Accessibility, Cookie Preferences |
+| T00-07 | Cookie consent banner (accept / manage preferences UI) |
+| T00-08 | `README.md` run instructions + brand naming note |
+| T00-09 | Foundation QA gate |
+
+## EPIC-01 — Marketing Site → `docs/epics/EPIC-01-marketing.md`
+
+| ID | Ticket |
+| --- | --- |
+| T01-01 | Global header + mega-nav: Agents · Platform · Products · Customers |
+| T01-02 | Header utilities: More Sites, Sign In help, Request Demo, Contact Sales |
+| T01-03 | Promo / announcement banner strip |
+| T01-04 | Homepage hero: brand-level headline + sub + dual CTA |
+| T01-05 | Hero “Ask us anything” prompt + suggestion chips |
+| T01-06 | Logo / trust strip (“organizations trust Work Beacon”) |
+| T01-07 | Platform value props (context · governance · works where you work) |
+| T01-08 | Agents hub section (HR · Finance · IT & Developers · Everyone) |
+| T01-09 | “Meet the agent” orchestrator block (Sana-equivalent — branded Work Beacon Agent) |
+| T01-10 | Customer stories carousel (3 stories: quote + metric + logo placeholder) |
+| T01-11 | Partner ecosystem teaser |
+| T01-12 | Industry solutions teaser |
+| T01-13 | Midsize packages teaser (Work Beacon GO) |
+| T01-14 | Bottom CTA band (Contact Sales / Request Demo) |
+| T01-15 | Global footer (Agents & Products · Industries · Resources · Learn · Company · Legal · locale) |
+| T01-16 | Agents landing + category templates |
+| T01-17 | Platform landing (builder · data · governance · ecosystem) |
+| T01-18 | Products index + product detail template |
+| T01-19 | Customers / case studies index + detail |
+| T01-20 | Solutions by industry template |
+| T01-21 | Resources hub (stories · demos · events · webinars · library) |
+| T01-22 | Pricing page (3-tier enterprise) |
+| T01-23 | About · Company · Careers |
+| T01-24 | Search overlay (UI only, mock results) |
+| T01-25 | Mobile nav + responsive marketing QA |
+
+## EPIC-02 — Auth (Fake Login) → `docs/epics/EPIC-02-auth.md`
+
+| ID | Ticket |
+| --- | --- |
+| T02-01 | `/login` (email + password + SSO buttons) |
+| T02-02 | Sign-in help panel (“ask your HR/IT for company link” pattern — own copy) |
+| T02-03 | Product login stubs list (UI only) |
+| T02-04 | `/signup` / Request Demo form |
+| T02-05 | `/forgot-password` |
+| T02-06 | Mock auth context (localStorage session) |
+| T02-07 | Protected wrapper for `/dashboard/*` |
+| T02-08 | Logout |
+| T02-09 | Demo account one-click enter |
+
+## EPIC-03 — Employee Dashboard → `docs/epics/EPIC-03-dashboard.md`
+
+| ID | Ticket |
+| --- | --- |
+| T03-01 | Dashboard shell (left nav + top bar + content) |
+| T03-02 | Home widgets: PTO · pay stub · events · quick actions |
+| T03-03 | Time Off: balance · request · history |
+| T03-04 | Pay: stubs list + detail modal |
+| T03-05 | Benefits: enrollments · beneficiaries · docs |
+| T03-06 | Performance: goals · check-ins · reviews |
+| T03-07 | Learning: assigned · in-progress · completed |
+| T03-08 | Profile: personal · emergency · settings |
+| T03-09 | Notifications center |
+| T03-10 | Manager toggle: team · approvals · analytics |
+| T03-11 | Mock data fixtures in `lib/mock/` |
+
+## EPIC-04 — AI Agent → `docs/epics/EPIC-04-agent.md`
+
+| ID | Ticket |
+| --- | --- |
+| T04-01 | Agent slide-over panel (chat UI) |
+| T04-02 | Floating trigger on all dashboard pages |
+| T04-03 | Chat thread (user/agent · typing indicator) |
+| T04-04 | Quick prompts (PTO · pay stub · time off · events) |
+| T04-05 | Rule-based mock backend (no LLM required) |
+| T04-06 | Action: query PTO |
+| T04-07 | Action: show latest pay stub |
+| T04-08 | Action: start time-off request from chat |
+| T04-09 | Action: upcoming events / deadlines |
+| T04-10 | Context badge (“can see dashboard data”) |
+| T04-11 | Marketing teaser: “Meet your Work Beacon Agent” |
+| T04-12 | First-open onboarding |
+| T04-13 | Cmd/Ctrl+K open agent |
+| T04-14 | Conversation history (localStorage) |
+
+## EPIC-05 — Polish & Ship → `docs/epics/EPIC-05-polish.md`
+
+| ID | Ticket |
+| --- | --- |
+| T05-01 | Responsive pass |
+| T05-02 | Accessibility (keyboard · ARIA · contrast) |
+| T05-03 | SEO (meta · sitemap · robots · OG) |
+| T05-04 | Performance (images · lazy · Lighthouse ≥ 90) |
+| T05-05 | 404 + error pages |
+| T05-06 | Loading / skeleton states |
+| T05-07 | Empty states |
+| T05-08 | Dark mode toggle (optional) |
+| T05-09 | Analytics stub (Plausible / PostHog ready) |
+| T05-10 | Final copy pass — Work Beacon voice only |
+| T05-11 | Legal + cookie QA |
+| T05-12 | Brand leak scan (no Workday / WorkForge strings in UI) |
+
+---
+
+## Phase 2 — Industry depth (planned)
+
+See `docs/PHASE-2-INDUSTRY.md`. Original Work Beacon features inspired by public HCM/suite categories.
+
+## EPIC-06 — Marketing depth → `docs/epics/EPIC-06-marketing-depth.md` ✅
+
+| ID | Ticket | Status |
+| --- | --- | --- |
+| T06-01 | Agents deep content | ✅ |
+| T06-02 | Platform narrative | ✅ |
+| T06-03 | Product detail depth | ✅ |
+| T06-04 | Customer stories media | ✅ |
+| T06-05 | Industries playbooks | ✅ |
+| T06-06 | Resources library (≥6) | ✅ |
+| T06-07 | Pricing matrix | ✅ |
+| T06-08 | Company credibility | ✅ |
+| T06-09 | Community / Marketplace / Developers shells | ✅ |
+| T06-10 | Marketing QA | ✅ |
+
+## EPIC-07 — Tenant foundation → `docs/epics/EPIC-07-tenant-foundation.md` ✅
+
+| ID | Ticket | Status |
+| --- | --- | --- |
+| T07-01 | Demo org seed | ✅ |
+| T07-02 | Personas & RBAC | ✅ |
+| T07-03 | Persona switcher | ✅ |
+| T07-04 | SSO theater | ✅ |
+| T07-05 | Worker directory | ✅ |
+| T07-06 | Org chart | ✅ |
+| T07-07 | Job & employment history | ✅ |
+| T07-08 | Documents vault | ✅ |
+| T07-09 | Task inbox | ✅ |
+| T07-10 | Admin console shell | ✅ |
+| T07-11 | Foundation QA | ✅ |
+
+## EPIC-08 — Workforce ops → `docs/epics/EPIC-08-workforce-ops.md` ✅
+
+| ID | Ticket | Status |
+| --- | --- | --- |
+| T08-01 | Leave policy engine | ✅ |
+| T08-02 | Leave calendar | ✅ |
+| T08-03 | Timesheets | ✅ |
+| T08-04 | Time clock | ✅ |
+| T08-05 | Scheduling / roster | ✅ |
+| T08-06 | Overtime & exceptions | ✅ |
+| T08-07 | Workforce agent tools | ✅ |
+| T08-08 | QA gate | ✅ |
+
+## EPIC-09 — Talent lifecycle → `docs/epics/EPIC-09-talent-lifecycle.md` ✅
+
+| ID | Ticket | Status |
+| --- | --- | --- |
+| T09-01 | Recruiting board | ✅ |
+| T09-02 | Job req form | ✅ |
+| T09-03 | Interview / offer stubs | ✅ |
+| T09-04 | Onboarding checklist | ✅ |
+| T09-05 | Offboarding | ✅ |
+| T09-06 | Performance cycles | ✅ |
+| T09-07 | Skills & career | ✅ |
+| T09-08 | Succession | ✅ |
+| T09-09 | Talent agent tools | ✅ |
+| T09-10 | QA gate | ✅ |
+
+## EPIC-10 — Money → `docs/epics/EPIC-10-money.md` ✅
+
+| ID | Ticket | Status |
+| --- | --- | --- |
+| T10-01 | Pay statement detail | ✅ |
+| T10-02 | Direct deposit & tax forms UI | ✅ |
+| T10-03 | Compensation / total rewards | ✅ |
+| T10-04 | Expenses | ✅ |
+| T10-05 | Procurement lite | ✅ |
+| T10-06 | GL / journal lite | ✅ |
+| T10-07 | FP&A planning board | ✅ |
+| T10-08 | Close checklist | ✅ |
+| T10-09 | Money agent tools | ✅ |
+| T10-10 | QA gate | ✅ |
+
+## EPIC-11 — Experience & Agent v2 → `docs/epics/EPIC-11-experience-agent.md`
+
+| ID | Ticket | |
+| --- | --- | --- |
+| T11-01 | Beacon Pulse survey | ✅ |
+| T11-02 | Manager pulse dashboard | ✅ |
+| T11-03 | Action plans | ✅ |
+| T11-04 | Wellness / benefits tips | ✅ |
+| T11-05 | Agent tool registry | ✅ |
+| T11-06 | Agent audit log | ✅ |
+| T11-07 | Optional LLM adapter | ✅ |
+| T11-08 | Proactive suggestions | ✅ |
+| T11-09 | Guided tours | ✅ |
+| T11-10 | QA gate | ✅ |
+
+## EPIC-12 — Platform → `docs/epics/EPIC-12-platform.md`
+
+| ID | Ticket |
+| --- | --- |
+| T12-01 | Workflow builder lite |
+| T12-02 | Business process events |
+| T12-03 | Report gallery |
+| T12-04 | Dashboards builder |
+| T12-05 | Integrations catalog |
+| T12-06 | Webhooks / API explorer |
+| T12-07 | Marketplace apps |
+| T12-08 | Developer portal |
+| T12-09 | Security & compliance center |
+| T12-10 | Platform QA + Phase 2 wrap |
+
+---
+
+## Acceptance Criteria (every ticket)
+
+- Renders on mobile + desktop  
+- Work Beacon brand only — **no Workday assets, logos, or copied code**  
+- Empty + loading states where data exists  
+- Keyboard accessible  
+- Copy matches “confident + clean”
+
+## Definition of Done
+
+### Phase 1
+- EPIC-00 → EPIC-05 gates passed  
+- Brand leak scan clean  
+
+### Phase 2
+- EPIC-06 → EPIC-12 gates passed (`docs/ROADMAP.md`)  
+- Multi-persona demo + Hire-to-Retire + Money paths documented  
+- Agent tools ≥10; LLM optional and off by default  

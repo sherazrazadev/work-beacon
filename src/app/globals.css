@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f7f4ef;
+  --fg: #0b1f3a;
+  --fg-muted: #526074;
+  --accent: #ff6b35;
+  --accent-hover: #e85a28;
+  --surface: #ffffff;
+  --surface-muted: #efeae3;
+  --border: color-mix(in oklab, #0b1f3a 12%, transparent);
+  --ring: #ff6b35;
+  --background: var(--bg);
+  --foreground: var(--fg);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+}
+
+html {
+  overflow-x: clip;
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(255, 107, 53, 0.14), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(11, 31, 58, 0.1), transparent 50%),
+    linear-gradient(180deg, #fbf8f3 0%, var(--bg) 40%, #eef2f7 100%);
+  color: var(--fg);
+  font-family: var(--font-body), ui-sans-serif, sans-serif;
+  min-height: 100%;
+  overflow-x: clip;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 35%, white);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
