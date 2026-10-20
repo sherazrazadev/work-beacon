@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DataTable, Td, Th, Tr } from "@/components/ui/data-table";
+import { fieldControlClass } from "@/components/ui/field";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth/auth-provider";
 import { useMock } from "@/components/dashboard/mock-provider";
 import { COST_CENTERS } from "@/lib/mock/org";
@@ -96,62 +99,60 @@ export function TimesheetsView() {
         </p>
       ) : null}
 
-      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-        <table className="min-w-[640px] w-full border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-[var(--border)] text-[var(--fg-muted)]">
-              <th className="py-2 pr-3 font-medium">Date</th>
-              <th className="py-2 pr-3 font-medium">Hours</th>
-              <th className="py-2 pr-3 font-medium">Cost center</th>
-              <th className="py-2 font-medium">Project</th>
-            </tr>
-          </thead>
-          <tbody>
-            {draft.days.map((d) => (
-              <tr key={d.date} className="border-b border-[var(--border)]">
-                <td className="py-2 pr-3">{d.date}</td>
-                <td className="py-2 pr-3">
-                  <input
-                    type="number"
-                    min={0}
-                    max={24}
-                    step={0.5}
-                    disabled={draft.status !== "Draft"}
-                    value={d.hours}
-                    onChange={(e) => setHours(d.date, Number(e.target.value))}
-                    className="w-20 rounded-md border border-[var(--border)] bg-[var(--bg)] px-2 py-1"
-                  />
-                </td>
-                <td className="py-2 pr-3">
-                  <select
-                    disabled={draft.status !== "Draft"}
-                    value={d.costCenterId ?? ""}
-                    onChange={(e) =>
-                      setMeta(d.date, "costCenterId", e.target.value)
-                    }
-                    className="rounded-md border border-[var(--border)] bg-[var(--bg)] px-2 py-1"
-                  >
-                    <option value="">—</option>
-                    {COST_CENTERS.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.code}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="py-2">
-                  <input
-                    disabled={draft.status !== "Draft"}
-                    value={d.project ?? ""}
-                    onChange={(e) => setMeta(d.date, "project", e.target.value)}
-                    className="w-36 rounded-md border border-[var(--border)] bg-[var(--bg)] px-2 py-1"
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable minWidth="40rem">
+        <thead>
+          <tr>
+            <Th>Date</Th>
+            <Th numeric>Hours</Th>
+            <Th>Cost center</Th>
+            <Th>Project</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {draft.days.map((d) => (
+            <Tr key={d.date}>
+              <Td>{d.date}</Td>
+              <Td numeric>
+                <input
+                  type="number"
+                  min={0}
+                  max={24}
+                  step={0.5}
+                  disabled={draft.status !== "Draft"}
+                  value={d.hours}
+                  onChange={(e) => setHours(d.date, Number(e.target.value))}
+                  className={cn(fieldControlClass, "ml-auto h-8 w-20 px-2")}
+                />
+              </Td>
+              <Td>
+                <select
+                  disabled={draft.status !== "Draft"}
+                  value={d.costCenterId ?? ""}
+                  onChange={(e) =>
+                    setMeta(d.date, "costCenterId", e.target.value)
+                  }
+                  className={cn(fieldControlClass, "h-8 w-28 px-2")}
+                >
+                  <option value="">—</option>
+                  {COST_CENTERS.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.code}
+                    </option>
+                  ))}
+                </select>
+              </Td>
+              <Td>
+                <input
+                  disabled={draft.status !== "Draft"}
+                  value={d.project ?? ""}
+                  onChange={(e) => setMeta(d.date, "project", e.target.value)}
+                  className={cn(fieldControlClass, "h-8 w-36 px-2")}
+                />
+              </Td>
+            </Tr>
+          ))}
+        </tbody>
+      </DataTable>
 
       {draft.status === "Draft" ? (
         <div className="flex flex-wrap gap-2">
@@ -170,19 +171,30 @@ export function TimesheetsView() {
         <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--fg-muted)]">
           Submitted history
         </h2>
-        <ul className="mt-3 divide-y divide-[var(--border)] rounded-xl border border-[var(--border)] bg-[var(--surface)]">
-          {mine.map((t) => (
-            <li
-              key={t.id}
-              className="flex justify-between gap-3 px-4 py-3 text-sm"
-            >
-              <span>
-                Week of {t.weekStart} · {timesheetTotal(t)}h
-              </span>
-              <span className="text-[var(--fg-muted)]">{t.status}</span>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-3">
+          {mine.length === 0 ? (
+            <DataTable empty="No timesheets for this worker." />
+          ) : (
+            <DataTable>
+              <thead>
+                <tr>
+                  <Th>Week of</Th>
+                  <Th numeric>Hours</Th>
+                  <Th>Status</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {mine.map((t) => (
+                  <Tr key={t.id}>
+                    <Td>{t.weekStart}</Td>
+                    <Td numeric>{timesheetTotal(t)}h</Td>
+                    <Td>{t.status}</Td>
+                  </Tr>
+                ))}
+              </tbody>
+            </DataTable>
+          )}
+        </div>
       </section>
 
       {isManager && pendingTeam.length > 0 ? (

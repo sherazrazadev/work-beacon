@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Field, TextInput } from "@/components/ui/field";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
   DEMO_ACCOUNT,
@@ -66,57 +67,54 @@ export function LoginForm() {
   }
 
   return (
-    <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-sm">
-      <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold text-[var(--fg)]">
+    <div className="w-full max-w-md rounded-md border border-[var(--border)] bg-[var(--surface)] p-8">
+      <p className="text-xs font-semibold uppercase tracking-wider text-[var(--fg-muted)]">
+        Northstar Labs
+      </p>
+      <h1 className="mt-2 font-[family-name:var(--font-display)] text-2xl font-bold text-[var(--fg)]">
         Sign in to {BRAND.name}
       </h1>
       <p className="mt-2 text-sm text-[var(--fg-muted)]">
         Demo auth only — nothing leaves this browser.
       </p>
 
+      <div className="mt-6 rounded-md border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+        <p className="text-sm font-medium text-[var(--fg)]">
+          Fastest path for the product demo
+        </p>
+        <p className="mt-1 text-xs text-[var(--fg-muted)]">
+          {DEMO_ACCOUNT.email} / {DEMO_ACCOUNT.password}
+        </p>
+        <Button type="button" className="mt-3 w-full" onClick={enterDemo}>
+          Enter demo account
+        </Button>
+      </div>
+
       <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
-        <label className="block text-sm text-[var(--fg-muted)]">
-          Work email
-          <input
+        <Field label="Work email">
+          <TextInput
             type="email"
             autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[var(--fg)] outline-none focus:ring-2 focus:ring-[var(--accent)]"
             placeholder="you@company.com"
             required
           />
-        </label>
-        <label className="block text-sm text-[var(--fg-muted)]">
-          Password
-          <input
+        </Field>
+        <Field label="Password" error={error}>
+          <TextInput
             type="password"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[var(--fg)] outline-none focus:ring-2 focus:ring-[var(--accent)]"
             placeholder="••••••••"
             required
           />
-        </label>
-        {error ? (
-          <p className="text-sm text-red-600" role="alert">
-            {error}
-          </p>
-        ) : null}
-        <Button type="submit" className="w-full">
+        </Field>
+        <Button type="submit" variant="secondary" className="w-full">
           Sign in
         </Button>
       </form>
-
-      <div className="mt-4 flex flex-col gap-2">
-        <Button type="button" variant="secondary" className="w-full" onClick={enterDemo}>
-          Enter demo account
-        </Button>
-        <p className="text-center text-xs text-[var(--fg-muted)]">
-          Demo: {DEMO_ACCOUNT.email} / {DEMO_ACCOUNT.password}
-        </p>
-      </div>
 
       <div className="mt-6 space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-[var(--fg-muted)]">

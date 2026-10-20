@@ -70,7 +70,7 @@ export function PayStatementView({ stubId }: { stubId: string }) {
       <div>
         <Link
           href="/dashboard/pay"
-          className="text-sm text-[var(--accent)]"
+          className="inline-flex min-h-10 items-center text-sm text-[var(--accent)]"
         >
           ← All statements
         </Link>

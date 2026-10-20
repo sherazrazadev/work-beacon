@@ -5,6 +5,7 @@ export type PayLine = {
 
 export type PayStub = {
   id: string;
+  workerId?: string;
   period: string;
   payDate: string;
   net: number;
@@ -24,6 +25,8 @@ export type TimeOffRequest = {
   end: string;
   hours: number;
   status: "Approved" | "Pending" | "Denied";
+  /** Current leave-workflow step (0-based). */
+  stepIndex?: number;
 };
 
 export type DashboardEvent = {

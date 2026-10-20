@@ -31,17 +31,17 @@ function Node({
             type="button"
             aria-expanded={open}
             onClick={() => toggle(workerId)}
-            className="mt-0.5 size-6 shrink-0 rounded border border-[var(--border)] text-xs text-[var(--fg-muted)]"
+            className="size-9 shrink-0 rounded border border-[var(--border)] text-xs text-[var(--fg-muted)]"
           >
             {open ? "−" : "+"}
           </button>
         ) : (
-          <span className="mt-0.5 size-6 shrink-0" />
+          <span className="size-9 shrink-0" />
         )}
         <div>
           <Link
             href={`/dashboard/people/${worker.id}`}
-            className="font-medium text-[var(--fg)] hover:text-[var(--accent)]"
+            className="inline-flex min-h-9 items-center font-medium text-[var(--fg)] hover:text-[var(--accent)]"
           >
             {worker.name}
           </Link>

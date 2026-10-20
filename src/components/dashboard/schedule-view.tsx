@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth/auth-provider";
 import { useMock } from "@/components/dashboard/mock-provider";
+import { StackTable } from "@/components/ui/stack-table";
 import { getDirectReports, getWorker } from "@/lib/mock/org";
 import { WF_TODAY, weekDates, weekStartMonday } from "@/lib/mock/workforce";
 import { DashboardSkeleton } from "@/components/dashboard/skeleton";
@@ -57,7 +58,7 @@ export function ScheduleView() {
         ) : null}
       </div>
 
-      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <StackTable>
         <table className="min-w-[720px] w-full border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-[var(--border)] text-[var(--fg-muted)]">
@@ -95,7 +96,7 @@ export function ScheduleView() {
             })}
           </tbody>
         </table>
-      </div>
+      </StackTable>
 
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--fg-muted)]">

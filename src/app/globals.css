@@ -1,15 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f7f4ef;
-  --fg: #0b1f3a;
-  --fg-muted: #526074;
+  --bg: #f3f4f6;
+  --fg: #0c1524;
+  --fg-muted: #5a6573;
   --accent: #ff6b35;
   --accent-hover: #e85a28;
   --surface: #ffffff;
-  --surface-muted: #efeae3;
-  --border: color-mix(in oklab, #0b1f3a 12%, transparent);
+  --surface-muted: #e8ecf1;
+  --border: color-mix(in oklab, #0c1524 12%, transparent);
   --ring: #ff6b35;
+  --danger: #b42318;
+  --navy: #0b1f3a;
+  --dash-bg: #eef1f5;
   --background: var(--bg);
   --foreground: var(--fg);
 }
@@ -26,10 +29,7 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(255, 107, 53, 0.14), transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, rgba(11, 31, 58, 0.1), transparent 50%),
-    linear-gradient(180deg, #fbf8f3 0%, var(--bg) 40%, #eef2f7 100%);
+  background: linear-gradient(180deg, #f7f8fa 0%, var(--bg) 40%, #eef1f5 100%);
   color: var(--fg);
   font-family: var(--font-body), ui-sans-serif, sans-serif;
   min-height: 100%;
@@ -47,7 +47,85 @@ a {
 }
 
 ::selection {
-  background: color-mix(in oklab, var(--accent) 35%, white);
+  background: color-mix(in oklab, var(--accent) 28%, white);
+}
+
+.wb-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Mobile: tables inside <StackTable> become one card per row. */
+@media (max-width: 639px) {
+  .wb-stack-wrap {
+    overflow-x: visible;
+  }
+  .wb-stack-wrap table {
+    min-width: 0 !important;
+    width: 100%;
+  }
+  .wb-stack-wrap thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .wb-stack-wrap table,
+  .wb-stack-wrap tbody,
+  .wb-stack-wrap tfoot,
+  .wb-stack-wrap tr {
+    display: block;
+  }
+  .wb-stack-wrap tbody tr {
+    margin-bottom: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--border) !important;
+    border-radius: 0.75rem;
+    background: var(--surface);
+  }
+  .wb-stack-wrap td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    max-width: none !important;
+    padding: 0.5rem 0 !important;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    min-width: 0;
+  }
+  .wb-stack-wrap td:last-child,
+  .wb-stack-wrap td:not(:has(~ td:not(:empty))) {
+    border-bottom: 0;
+  }
+  .wb-stack-wrap td:empty {
+    display: none;
+  }
+  .wb-stack-wrap td[data-label]:not([data-label=""])::before {
+    content: attr(data-label);
+    flex: none;
+    max-width: 45%;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .wb-stack-wrap td[data-label=""] {
+    justify-content: flex-start;
+    text-align: left;
+  }
+}
+
+.dashboard-shell {
+  background: var(--dash-bg);
 }
 
 @media (prefers-reduced-motion: reduce) {

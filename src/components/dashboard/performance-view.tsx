@@ -78,7 +78,7 @@ export function PerformanceView() {
                     onChange={(e) =>
                       rateGoal(g.id, workerId, Number(e.target.value))
                     }
-                    className="ml-2 rounded-md border border-[var(--border)] bg-[var(--bg)] px-2 py-1"
+                    className="ml-2 min-h-10 rounded-md border border-[var(--border)] bg-[var(--bg)] px-2 py-1 sm:min-h-8"
                   >
                     <option value="">—</option>
                     {[1, 2, 3, 4, 5].map((n) => (

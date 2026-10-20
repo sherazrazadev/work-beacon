@@ -19,6 +19,7 @@ const CATALOG = [
   ),
   { title: "Pricing", href: "/pricing", group: "Company" },
   { title: "About", href: "/about", group: "Company" },
+  { title: "Blog", href: "/blog", group: "Resources" },
   { title: "Resources", href: "/resources", group: "Resources" },
   { title: "Contact Sales", href: "/contact-sales", group: "Sales" },
 ];

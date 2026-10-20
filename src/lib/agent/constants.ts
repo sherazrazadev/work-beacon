@@ -3,7 +3,11 @@ import { BRAND } from "@/lib/brand";
 export const AGENT_NAME = `${BRAND.name} Agent`;
 
 export const QUICK_PROMPTS = [
-  { id: "pto", label: "How much PTO do I have?", text: "How much PTO do I have?" },
+  {
+    id: "pto",
+    label: "How much PTO do I have?",
+    text: "How much PTO do I have?",
+  },
   {
     id: "pay",
     label: "Show my last pay stub",
@@ -58,5 +62,35 @@ export const QUICK_PROMPTS = [
     id: "wellness",
     label: "Wellness tips",
     text: "Any wellness or enrollment tips?",
+  },
+  {
+    id: "case",
+    label: "File an HR case",
+    text: "File an HR case about missing overtime",
+  },
+  {
+    id: "enroll",
+    label: "Open enrollment",
+    text: "Have I submitted open enrollment?",
+  },
+  {
+    id: "assets",
+    label: "My assets",
+    text: "What assets are assigned to me?",
+  },
+  {
+    id: "payday",
+    label: "Next payday",
+    text: "When is my next payday?",
+  },
+  {
+    id: "learning",
+    label: "My learning",
+    text: "What courses are assigned to me?",
+  },
+  {
+    id: "headcount",
+    label: "Headcount",
+    text: "What is our headcount?",
   },
 ] as const;

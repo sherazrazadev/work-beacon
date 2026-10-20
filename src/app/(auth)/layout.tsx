@@ -7,8 +7,8 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="border-b border-[var(--border)] px-4 py-4 sm:px-6">
+    <div className="flex flex-1 flex-col bg-[var(--dash-bg)]">
+      <div className="border-b border-[var(--border)] bg-[var(--surface)] px-4 py-4 sm:px-6">
         <Link
           href="/"
           className="font-[family-name:var(--font-display)] text-lg font-bold text-[var(--fg)]"

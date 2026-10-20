@@ -7,6 +7,11 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { useMock } from "@/components/dashboard/mock-provider";
 import { getDirectReports, getWorker } from "@/lib/mock/org";
 import { WF_TODAY, addDaysIso } from "@/lib/mock/workforce";
+import {
+  pendingLeaveForRole,
+  workflowById,
+  workflowStep,
+} from "@/lib/mock/platform";
 import { cn } from "@/lib/utils";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -93,7 +98,7 @@ export function LeaveCalendarView() {
           <button
             type="button"
             onClick={prev}
-            className="rounded-md border border-[var(--border)] px-3 py-1 text-sm"
+            className="min-h-10 rounded-md border border-[var(--border)] px-3 py-1 text-sm sm:min-h-8"
           >
             Prev
           </button>
@@ -101,7 +106,7 @@ export function LeaveCalendarView() {
           <button
             type="button"
             onClick={next}
-            className="rounded-md border border-[var(--border)] px-3 py-1 text-sm"
+            className="min-h-10 rounded-md border border-[var(--border)] px-3 py-1 text-sm sm:min-h-8"
           >
             Next
           </button>
@@ -156,15 +161,15 @@ export function LeaveCalendarView() {
           </div>
         </div>
       </div>
-      {isManager ? (
+      {isManager ||
+      pendingLeaveForRole(state.timeOff, state.workflows, role).length > 0 ? (
         <section>
           <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--fg-muted)]">
-            Pending leave
+            Pending leave (your step)
           </h2>
           <ul className="mt-3 space-y-2">
-            {events
-              .filter((e) => e.status === "Pending")
-              .map((e) => (
+            {pendingLeaveForRole(state.timeOff, state.workflows, role).map(
+              (e) => (
                 <li
                   key={e.id}
                   className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm"
@@ -176,12 +181,17 @@ export function LeaveCalendarView() {
                   <Button
                     type="button"
                     size="sm"
-                    onClick={() => decideTimeOff(e.id, "Approved")}
+                    onClick={() => decideTimeOff(e.id, "Approved", role)}
                   >
-                    Approve
+                    Approve as{" "}
+                    {workflowStep(
+                      workflowById(state.workflows, "leave"),
+                      e.stepIndex ?? 0,
+                    )?.label ?? "step"}
                   </Button>
                 </li>
-              ))}
+              ),
+            )}
           </ul>
         </section>
       ) : null}

@@ -65,4 +65,10 @@ bash scripts/brand-leak-scan.sh
 ## Status
 
 - **Phase 1:** Epics **00–05** complete  
-- **Phase 2:** Epics **06–11** complete · **EPIC-12** next (`docs/PHASE-2-INDUSTRY.md`)  
+- **Phase 2:** Epics **06–12** complete (`docs/PHASE-2-INDUSTRY.md`)  
+- **Phase 3:** EPIC-13 People ops + EPIC-14 org/assets/identity  
+- **Phase 4:** EPIC-15 payroll operations  
+- **Phase 5:** EPIC-16 enterprise UI/UX (`docs/DESIGN.md`)  
+- **Phase 6:** EPIC-17 Beacon Insights (`/dashboard/insights`)  
+- **Phase 7:** EPIC-18 Learning ops (`/dashboard/learning`)  
+- Platform: workflows, reports, `/api/demo/*`, Apps catalog, `/developers` 

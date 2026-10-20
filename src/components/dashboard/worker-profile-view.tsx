@@ -99,7 +99,10 @@ export function WorkerProfileView({ workerId }: { workerId: string }) {
         </ol>
       </section>
 
-      <Link href="/dashboard/directory" className="text-sm text-[var(--accent)]">
+      <Link
+        href="/dashboard/directory"
+        className="inline-flex min-h-10 items-center text-sm text-[var(--accent)]"
+      >
         ← Directory
       </Link>
     </div>

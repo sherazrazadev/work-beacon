@@ -31,9 +31,9 @@ export type AgentTool = {
 export const AGENT_TOOLS: AgentTool[] = [
   {
     id: "explain_paycheck",
-    description: "Break down the latest pay stub into earnings, taxes, deductions.",
-    match: (q) =>
-      /\bexplain\b/.test(q) && /\b(pay|paycheck|stub)\b/.test(q),
+    description:
+      "Break down the latest pay stub into earnings, taxes, deductions.",
+    match: (q) => /\bexplain\b/.test(q) && /\b(pay|paycheck|stub)\b/.test(q),
     run: (_q, ctx) => {
       const p = ctx.latestPay;
       const earn = p.earnings
@@ -53,7 +53,8 @@ export const AGENT_TOOLS: AgentTool[] = [
   },
   {
     id: "submit_expense",
-    description: "File a software expense from the prompt amount (default $42).",
+    description:
+      "File a software expense from the prompt amount (default $42).",
     match: (q) => /\bsubmit\b/.test(q) && /\b(expense|\$?42)\b/.test(q),
     run: (q) => {
       const amountMatch = q.match(/\$?\s*(\d+(?:\.\d{1,2})?)/);
@@ -73,7 +74,9 @@ export const AGENT_TOOLS: AgentTool[] = [
     id: "request_time_off",
     description: "Prefill a vacation/sick/personal time-off request.",
     match: (q) =>
-      /\b(request|book|take|schedule).*(time.?off|vacation|pto|leave)\b/.test(q) ||
+      /\b(request|book|take|schedule).*(time.?off|vacation|pto|leave)\b/.test(
+        q,
+      ) ||
       /\b(time.?off|vacation|pto).*(request|book|take)\b/.test(q) ||
       q.includes("request time off"),
     run: (q) => {
@@ -178,6 +181,52 @@ export const AGENT_TOOLS: AgentTool[] = [
     },
   },
   {
+    id: "complete_learning",
+    description: "Complete the worker's open assigned training.",
+    match: (q) =>
+      /\b(complete|finish)\b/.test(q) &&
+      /\b(course|training|security awareness|learning)\b/.test(q),
+    run: (_q, ctx) => {
+      if (!ctx.learnOpenTitle) {
+        return {
+          text: "No open assigned course to complete.",
+          href: "/dashboard/learning",
+        };
+      }
+      return {
+        text: `Completing **${ctx.learnOpenTitle}**. A certificate is issued if this is the first completion.`,
+        href: "/dashboard/learning",
+        completeLearnId: "open",
+      };
+    },
+  },
+  {
+    id: "my_learning",
+    description: "List open assigned courses and overdue count.",
+    match: (q) =>
+      /\b(my learning|assigned course|training due|what courses|learning due)\b/.test(
+        q,
+      ),
+    run: (_q, ctx) => ({
+      text:
+        ctx.learnAssigned === 0
+          ? "No open assigned courses."
+          : `You have **${ctx.learnAssigned}** open course${ctx.learnAssigned === 1 ? "" : "s"}${ctx.learnOpenTitle ? ` (next: **${ctx.learnOpenTitle}**)` : ""}. **${ctx.learnOverdue}** overdue.`,
+      href: "/dashboard/learning",
+    }),
+  },
+  {
+    id: "overdue_learning",
+    description: "Team overdue learning count for managers.",
+    match: (q) =>
+      /\b(overdue).*(course|training|learning)\b/.test(q) ||
+      /\bwho is overdue\b/.test(q),
+    run: (_q, ctx) => ({
+      text: `**${ctx.learnOverdue}** open assignment${ctx.learnOverdue === 1 ? "" : "s"} overdue (due before demo today). Open Team learning to assign.`,
+      href: "/dashboard/learning/team",
+    }),
+  },
+  {
     id: "suggest_course",
     description: "Suggest a learning course for a skill.",
     match: (q) =>
@@ -203,6 +252,41 @@ export const AGENT_TOOLS: AgentTool[] = [
     run: (_q, ctx) => ({
       text: `You have **${ctx.vacationHours}h** vacation, **${ctx.sickHours}h** sick, and **${ctx.personalHours}h** personal time remaining (policy minus used).`,
       href: "/dashboard/time-off",
+    }),
+  },
+  {
+    id: "next_pay_date",
+    description: "Next scheduled pay date from the calendar.",
+    match: (q) =>
+      /\b(next pay|payday|pay date|when (do|am) i (get )?paid)\b/.test(q),
+    run: (_q, ctx) => ({
+      text: ctx.nextPayDate
+        ? `Next pay date is **${ctx.nextPayDate}**.`
+        : "No open pay period on the calendar.",
+      href: "/dashboard/pay",
+    }),
+  },
+  {
+    id: "payroll_run_status",
+    description: "Status of the open payroll run.",
+    match: (q) => /\b(payroll run|pay run|has payroll)\b/.test(q),
+    run: (_q, ctx) => ({
+      text: ctx.openRunStatus
+        ? `Open run is **${ctx.openRunStatus}**. Finance completes it on Payroll.`
+        : "No open payroll run.",
+      href: "/dashboard/payroll",
+    }),
+  },
+  {
+    id: "garnish_status",
+    description: "Count of active garnishments.",
+    match: (q) => /\b(garnish|child support|levy)\b/.test(q),
+    run: (_q, ctx) => ({
+      text:
+        ctx.activeGarnish === 0
+          ? "No active garnishments."
+          : `**${ctx.activeGarnish}** active garnishment${ctx.activeGarnish === 1 ? "" : "s"}. Applied on calculate.`,
+      href: "/dashboard/pay-adjustments",
     }),
   },
   {
@@ -251,10 +335,118 @@ export const AGENT_TOOLS: AgentTool[] = [
     },
   },
   {
+    id: "file_hr_case",
+    description: "File a People Operations case from the prompt.",
+    match: (q) =>
+      /\b(file|create)\b/.test(q) && /\b(case|hr ticket)\b/.test(q),
+    run: (q) => {
+      const subject = q.replace(/^.*?(case|ticket)\s*(about|for|:)?\s*/i, "").trim();
+      return {
+        text: `Filing an HR case${subject ? ` about **${subject}**` : ""}. People Operations will see it in Inbox.`,
+        href: "/dashboard/cases",
+        fileCase: {
+          category: /\bpay/.test(q)
+            ? "Payroll"
+            : /\bbenefit/.test(q)
+              ? "Benefits"
+              : /\btime/.test(q)
+                ? "Time"
+                : "Other",
+          subject: subject || "Agent-filed case",
+        },
+      };
+    },
+  },
+  {
+    id: "case_status",
+    description: "Count open HR cases for this worker or (HR) the queue.",
+    match: (q) => /\b(case|ticket)\b/.test(q),
+    run: (_q, ctx) => ({
+      text:
+        ctx.openCases === 0
+          ? "No open HR cases on this view."
+          : `**${ctx.openCases}** open HR case${ctx.openCases === 1 ? "" : "s"}.`,
+      href: "/dashboard/cases",
+    }),
+  },
+  {
+    id: "enrollment_status",
+    description: "Open enrollment window and whether this worker submitted.",
+    match: (q) => /\b(enroll|election|medical plan|401)\b/.test(q),
+    run: (_q, ctx) => ({
+      text: ctx.enrollmentDone
+        ? "Your open-enrollment elections are on file. Open Enrollment to change them before the window closes."
+        : "Open enrollment is still open. I can take you to the medical / dental / 401(k) wizard.",
+      href: "/dashboard/enrollment",
+    }),
+  },
+  {
+    id: "internal_jobs",
+    description: "How many internal reqs are open.",
+    match: (q) =>
+      /\b(internal job|internal req|open reqs?|mobility)\b/.test(q),
+    run: (_q, ctx) => ({
+      text: `**${ctx.openInternalJobs}** open internal req${ctx.openInternalJobs === 1 ? "" : "s"}. Apply from Internal jobs.`,
+      href: "/dashboard/mobility",
+    }),
+  },
+  {
+    id: "my_assets",
+    description: "List IT assets assigned to this worker.",
+    match: (q) => /\b(assets?|laptops?|badges?|phones?|checkout)\b/.test(q),
+    run: (_q, ctx) => {
+      if (ctx.assignedAssets.length === 0) {
+        return {
+          text: "No assets assigned. Open IT assets to check one out.",
+          href: "/dashboard/assets",
+        };
+      }
+      const lines = ctx.assignedAssets
+        .map((a) => `• ${a.kind} ${a.tag}`)
+        .join("\n");
+      return {
+        text: `Assigned to you:\n${lines}`,
+        href: "/dashboard/assets",
+      };
+    },
+  },
+  {
+    id: "request_access",
+    description: "Open an access request (default VPN member).",
+    match: (q) =>
+      /\b(request|need)\b/.test(q) && /\b(access|vpn|github|entitlement)\b/.test(q),
+    run: (q) => {
+      const app = /\bgithub\b/.test(q)
+        ? "GitHub"
+        : /\bledger\b/.test(q)
+          ? "Finance ledger"
+          : /\bpeople\b/.test(q)
+            ? "People admin"
+            : "VPN";
+      return {
+        text: `Opening an access request for **${app}**.`,
+        href: "/dashboard/access",
+        requestAccess: { app, roleLabel: "member" },
+      };
+    },
+  },
+  {
+    id: "move_status",
+    description: "Count submitted transfers and promotions.",
+    match: (q) =>
+      /\b(transfer|promotion|org change|move status)\b/.test(q),
+    run: (_q, ctx) => ({
+      text:
+        ctx.openMoves === 0
+          ? "No submitted transfers or promotions on this view."
+          : `**${ctx.openMoves}** org-change request${ctx.openMoves === 1 ? "" : "s"} in Submitted.`,
+      href: "/dashboard/moves",
+    }),
+  },
+  {
     id: "wellness_tips",
     description: "Benefits and wellness tips from current enrollments.",
-    match: (q) =>
-      /\b(wellness|benefits tip|checkup|401|enrollment)\b/.test(q),
+    match: (q) => /\b(wellness|benefits tip|checkup|401|enrollment)\b/.test(q),
     run: (_q, ctx) => {
       const tips = wellnessTips(ctx.benefits, ctx.events);
       if (tips.length === 0) {
@@ -283,11 +475,45 @@ export const AGENT_TOOLS: AgentTool[] = [
     }),
   },
   {
+    id: "people_headcount",
+    description: "Company headcount from Beacon Insights.",
+    match: (q) =>
+      /\b(headcount|how many people|workforce size|people insights)\b/.test(q),
+    run: (_q, ctx) => ({
+      text: `Northstar headcount is **${ctx.insightHeadcount}** across the demo tenant. Open Insights for department and location mix.`,
+      href: "/dashboard/insights",
+    }),
+  },
+  {
+    id: "talent_pipeline",
+    description: "Recruiting pipeline and open reqs.",
+    match: (q) =>
+      /\b(pipeline|candidates|funnel|open reqs?)\b/.test(q),
+    run: (_q, ctx) => ({
+      text: `**${ctx.insightPipeline}** candidates in the funnel · **${ctx.insightOpenJobs}** open reqs.`,
+      href: "/dashboard/insights",
+    }),
+  },
+  {
+    id: "spend_variance",
+    description: "Spend vs Beacon Planning scenario.",
+    match: (q) =>
+      /\b(spend variance|vs plan|budget vs|labor cost|money insights)\b/.test(q),
+    run: (_q, ctx) => {
+      const n = ctx.insightSpendVariance;
+      const dir = n > 0 ? "over" : n < 0 ? "under" : "on";
+      return {
+        text: `Actual spend is **${dir}** plan by **${money(Math.abs(n))}**. ${ctx.insightDrafts} draft timesheets on the time board.`,
+        href: "/dashboard/insights",
+      };
+    },
+  },
+  {
     id: "help",
     description: "List what the agent can do.",
     match: (q) => /\b(help|what can you|capabilities)\b/.test(q),
     run: () => ({
-      text: `I can check PTO, pay, **explain my last paycheck**, submit a **$42 software expense**, schedule, timesheets, **onboarding**, **Pulse**, wellness tips, inbox, and **suggest a course**.`,
+      text: `I can check PTO, pay, **headcount**, **pipeline**, **spend vs plan**, **next payday**, **assigned courses**, **complete training**, overdue learning, **payroll run**, garnishments, expenses, schedule, timesheets, onboarding, Pulse, HR cases, enrollment, jobs, assets, access, moves, inbox, and courses.`,
     }),
   },
 ];

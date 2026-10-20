@@ -8,11 +8,11 @@ export function PersonaSwitcher() {
   if (!session) return null;
 
   return (
-    <label className="flex items-center gap-2 text-xs text-[var(--fg-muted)]">
+    <label className="flex min-w-0 items-center gap-2 text-xs text-[var(--fg-muted)]">
       <span className="hidden sm:inline">Persona</span>
       <select
         aria-label="Switch demo persona"
-        className="max-w-[10rem] truncate rounded-md border border-[var(--border)] bg-[var(--bg)] px-2 py-1 text-xs text-[var(--fg)] sm:max-w-none"
+        className="h-10 min-w-0 max-w-[7.5rem] truncate rounded-md border border-[var(--border)] bg-[var(--bg)] px-2 text-xs text-[var(--fg)] sm:h-8 sm:max-w-none"
         value={session.user.personaId}
         onChange={(e) => switchPersona(e.target.value)}
       >

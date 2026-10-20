@@ -514,6 +514,6 @@ export const COMMUNITY_THREADS = [
 
 export const DEV_ENDPOINTS = [
   { method: "GET", path: "/api/demo/workers", desc: "List demo workers" },
+  { method: "GET", path: "/api/demo/events", desc: "List process events" },
   { method: "GET", path: "/api/demo/time-off", desc: "List leave requests" },
-  { method: "GET", path: "/api/demo/pay-stubs", desc: "List pay stubs" },
 ] as const;

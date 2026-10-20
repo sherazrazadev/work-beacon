@@ -15,6 +15,7 @@ import {
   TimeOffRequest,
   clearMockStore,
   defaultMockStore,
+  hydrateMockStore,
   readMockStore,
   writeMockStore,
 } from "@/lib/mock";
@@ -60,12 +61,50 @@ import {
   hasSubmittedPulse,
   type PulseTheme,
 } from "@/lib/mock/pulse";
+import {
+  HomeWidgetId,
+  WorkflowDef,
+  WorkflowKind,
+  advanceWorkflow,
+  newProcessEvent,
+  workflowById,
+} from "@/lib/mock/platform";
+import { getWorker } from "@/lib/mock/org";
+import type { InsightBoard } from "@/lib/mock/insights";
+import {
+  courseById,
+  type LearnCertificate,
+} from "@/lib/mock/learn";
+import type {
+  BenefitElection,
+  CaseCategory,
+  CaseStatus,
+  Delegation,
+  DelegationScope,
+  HrCase,
+  InternalApplication,
+} from "@/lib/mock/people-ops";
+import { workerName } from "@/lib/mock/people-ops";
+import type {
+  AccessApp,
+  AccessRequest,
+  EligibilityStatus,
+  OrgMove,
+  OrgMoveKind,
+} from "@/lib/mock/org-ops";
+import {
+  calculateResults,
+  resultToStub,
+  SEED_PAY_PERIODS,
+  type PayPeriod,
+} from "@/lib/mock/payroll";
 
 type MockContextValue = {
   ready: boolean;
   state: MockStoreState;
   pto: { vacationHours: number; sickHours: number; personalHours: number };
   payStubs: typeof SEED_PAY_STUBS;
+  payPeriods: PayPeriod[];
   events: typeof SEED_EVENTS;
   benefits: typeof SEED_BENEFITS;
   beneficiaries: typeof SEED_BENEFICIARIES;
@@ -105,7 +144,11 @@ type MockContextValue = {
   addExpense: (
     expense: Omit<Expense, "id" | "status">,
   ) => Expense;
-  decideExpense: (id: string, status: ExpenseStatus) => void;
+  decideExpense: (
+    id: string,
+    status: ExpenseStatus,
+    role?: DemoRole,
+  ) => void;
   requestPurchase: (itemId: string, qty: number, requestedBy: string) => void;
   approvePurchase: (id: string) => void;
   issuePurchaseOrder: (id: string) => string | null;
@@ -120,7 +163,11 @@ type MockContextValue = {
   addPunch: (workerId: string, kind: Punch["kind"]) => void;
   publishShifts: () => void;
   resolveException: (id: string) => void;
-  decideTimeOff: (id: string, status: TimeOffRequest["status"]) => void;
+  decideTimeOff: (
+    id: string,
+    status: TimeOffRequest["status"],
+    role?: DemoRole,
+  ) => void;
   submitPulse: (workerId: string, scores: Record<string, number>) => boolean;
   createPulsePlan: (theme: string) => string | null;
   appendAgentAudit: (entry: {
@@ -131,6 +178,79 @@ type MockContextValue = {
     source: "rules" | "llm";
   }) => void;
   clearAgentAudit: () => void;
+  setWorkflow: (kind: WorkflowKind, steps: WorkflowDef["steps"]) => void;
+  toggleIntegration: (id: string) => void;
+  toggleApp: (id: string) => void;
+  setHomePins: (role: DemoRole, pins: HomeWidgetId[]) => void;
+  setInsightView: (board: InsightBoard) => void;
+  startLearnAssignment: (id: string) => boolean;
+  completeLearnAssignment: (id: string) => LearnCertificate | null;
+  assignLearnCourse: (
+    workerId: string,
+    courseId: string,
+    due: string,
+  ) => string | null;
+  rotateDemoApiKey: () => string;
+  setRetentionDays: (days: number) => void;
+  addHrCase: (input: {
+    workerId: string;
+    category: CaseCategory;
+    subject: string;
+    body: string;
+  }) => HrCase;
+  setCaseStatus: (id: string, status: CaseStatus) => void;
+  addDelegation: (input: {
+    fromWorkerId: string;
+    toWorkerId: string;
+    scope: DelegationScope;
+    end: string;
+  }) => Delegation | null;
+  setCompProposed: (id: string, proposed: number) => void;
+  submitComp: (id: string) => boolean;
+  applyInternal: (workerId: string, jobId: string) => InternalApplication | null;
+  withdrawInternal: (id: string) => void;
+  saveElection: (election: BenefitElection) => void;
+  requestMove: (input: {
+    kind: OrgMoveKind;
+    workerId: string;
+    fromTitle: string;
+    toTitle: string;
+    toDepartmentId: string;
+  }) => OrgMove;
+  decideMove: (id: string, status: "Approved" | "Denied") => void;
+  assignAsset: (id: string, workerId: string) => void;
+  returnAsset: (id: string) => void;
+  requestAccess: (input: {
+    workerId: string;
+    app: AccessApp;
+    roleLabel: string;
+  }) => AccessRequest | null;
+  decideAccess: (id: string, status: "Approved" | "Denied") => void;
+  saveEligibility: (input: {
+    workerId: string;
+    status: EligibilityStatus;
+    docs: string[];
+  }) => void;
+  calculatePayRun: (id: string) => boolean;
+  completePayRun: (id: string) => boolean;
+  addOffCycle: (input: {
+    workerId: string;
+    amount: number;
+    reason: string;
+  }) => void;
+  payOffCycle: (id: string) => boolean;
+  addGarnishment: (input: {
+    workerId: string;
+    agency: string;
+    amountPerPeriod: number;
+  }) => void;
+  releaseGarnishment: (id: string) => void;
+  addRetro: (input: {
+    workerId: string;
+    amount: number;
+    note: string;
+    periodLabel: string;
+  }) => void;
 };
 
 const MockContext = createContext<MockContextValue | null>(null);
@@ -148,9 +268,17 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
     return () => window.clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (state.assets && state.positions && state.hrCases) return;
+    const next = hydrateMockStore(state);
+    if (next === state) return;
+    setState(next);
+    writeMockStore(next);
+  }, [state]);
+
   const persist = useCallback((updater: (prev: MockStoreState) => MockStoreState) => {
     setState((prev) => {
-      const next = updater(prev);
+      const next = hydrateMockStore(updater(prev));
       writeMockStore(next);
       return next;
     });
@@ -161,7 +289,7 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
       persist((prev) => ({
         ...prev,
         timeOff: [
-          { ...req, id: `to-${Date.now()}`, status: "Pending" },
+          { ...req, id: `to-${Date.now()}`, status: "Pending", stepIndex: 0 },
           ...prev.timeOff,
         ],
       }));
@@ -399,11 +527,46 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
   );
 
   const decideTimeOff = useCallback(
-    (id: string, status: TimeOffRequest["status"]) => {
-      persist((prev) => ({
-        ...prev,
-        timeOff: prev.timeOff.map((r) => (r.id === id ? { ...r, status } : r)),
-      }));
+    (id: string, status: TimeOffRequest["status"], role?: DemoRole) => {
+      persist((prev) => {
+        const row = prev.timeOff.find((r) => r.id === id);
+        if (!row) return prev;
+        if (status === "Denied") {
+          return {
+            ...prev,
+            timeOff: prev.timeOff.map((r) =>
+              r.id === id ? { ...r, status: "Denied" } : r,
+            ),
+          };
+        }
+        const wf = workflowById(prev.workflows, "leave");
+        const result = advanceWorkflow(wf, row.stepIndex ?? 0, "Approved");
+        const nextStatus = result.completed
+          ? "Approved"
+          : result.denied
+            ? "Denied"
+            : "Pending";
+        const worker = getWorker(row.workerId ?? "");
+        const event = result.completed
+          ? newProcessEvent(
+              "approved",
+              `Leave approved — ${worker?.name ?? row.workerId ?? "worker"}`,
+              `${row.type} ${row.start} → ${row.end}`,
+              role,
+            )
+          : null;
+        return {
+          ...prev,
+          timeOff: prev.timeOff.map((r) =>
+            r.id === id
+              ? { ...r, status: nextStatus, stepIndex: result.stepIndex }
+              : r,
+          ),
+          processEvents: event
+            ? [event, ...prev.processEvents].slice(0, 80)
+            : prev.processEvents,
+        };
+      });
     },
     [persist],
   );
@@ -480,6 +643,11 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
         const workerId = cand.workerId ?? `w-${cand.id}`;
         if (prev.onboarding.some((p) => p.workerId === workerId)) {
           ok = true;
+          const hired = newProcessEvent(
+            "hired",
+            `${cand.name} hired`,
+            "Existing onboarding plan",
+          );
           return {
             ...prev,
             candidates: prev.candidates.map((c) =>
@@ -488,10 +656,16 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
             jobs: prev.jobs.map((j) =>
               j.id === cand.jobId ? { ...j, status: "Filled" } : j,
             ),
+            processEvents: [hired, ...prev.processEvents].slice(0, 80),
           };
         }
         const tasks = onboardingTemplate(workerId);
         ok = true;
+        const hired = newProcessEvent(
+          "hired",
+          `${cand.name} hired`,
+          cand.workerId ? "Existing worker record" : `Onboarding plan ${workerId}`,
+        );
         return {
           ...prev,
           candidates: prev.candidates.map((c) =>
@@ -505,6 +679,7 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
             ...prev.onboarding,
           ],
           inbox: [...onboardingInbox(workerId, tasks), ...prev.inbox],
+          processEvents: [hired, ...prev.processEvents].slice(0, 80),
         };
       });
       return ok;
@@ -540,12 +715,19 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
         if (prev.offboarding.some((p) => p.workerId === workerId && p.status === "Open")) {
           return prev;
         }
+        const worker = getWorker(workerId);
+        const terminated = newProcessEvent(
+          "terminated",
+          `${worker?.name ?? workerId} offboarding started`,
+          `Initiated by ${initiatedBy}`,
+        );
         return {
           ...prev,
           offboarding: [
             offboardingTemplate(workerId, initiatedBy),
             ...prev.offboarding,
           ],
+          processEvents: [terminated, ...prev.processEvents].slice(0, 80),
         };
       });
     },
@@ -648,6 +830,7 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
         ...expense,
         id: `ex-${Date.now()}`,
         status: "Submitted",
+        stepIndex: 0,
       };
       persist((prev) => ({ ...prev, expenses: [row, ...prev.expenses] }));
       return row;
@@ -656,13 +839,42 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
   );
 
   const decideExpense = useCallback(
-    (id: string, status: ExpenseStatus) => {
-      persist((prev) => ({
-        ...prev,
-        expenses: prev.expenses.map((e) =>
-          e.id === id ? { ...e, status } : e,
-        ),
-      }));
+    (id: string, status: ExpenseStatus, role?: DemoRole) => {
+      persist((prev) => {
+        const row = prev.expenses.find((e) => e.id === id);
+        if (!row) return prev;
+        if (status === "Denied") {
+          return {
+            ...prev,
+            expenses: prev.expenses.map((e) =>
+              e.id === id ? { ...e, status: "Denied" } : e,
+            ),
+          };
+        }
+        const wf = workflowById(prev.workflows, "expense");
+        const result = advanceWorkflow(wf, row.stepIndex ?? 0, "Approved");
+        const nextStatus = result.completed ? "Approved" : "Submitted";
+        const worker = getWorker(row.workerId);
+        const event = result.completed
+          ? newProcessEvent(
+              "approved",
+              `Expense approved — ${worker?.name ?? row.workerId}`,
+              `${row.merchant} ${row.amount}`,
+              role,
+            )
+          : null;
+        return {
+          ...prev,
+          expenses: prev.expenses.map((e) =>
+            e.id === id
+              ? { ...e, status: nextStatus, stepIndex: result.stepIndex }
+              : e,
+          ),
+          processEvents: event
+            ? [event, ...prev.processEvents].slice(0, 80)
+            : prev.processEvents,
+        };
+      });
     },
     [persist],
   );
@@ -856,6 +1068,761 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
     persist((prev) => ({ ...prev, agentAudit: [] }));
   }, [persist]);
 
+  const setWorkflow = useCallback(
+    (kind: WorkflowKind, steps: WorkflowDef["steps"]) => {
+      persist((prev) => ({
+        ...prev,
+        workflows: prev.workflows.map((w) =>
+          w.id === kind
+            ? { ...w, steps: steps.map((s) => ({ ...s })) }
+            : w,
+        ),
+      }));
+    },
+    [persist],
+  );
+
+  const toggleIntegration = useCallback(
+    (id: string) => {
+      persist((prev) => {
+        const on = prev.connectedIntegrations.includes(id);
+        return {
+          ...prev,
+          connectedIntegrations: on
+            ? prev.connectedIntegrations.filter((x) => x !== id)
+            : [...prev.connectedIntegrations, id],
+        };
+      });
+    },
+    [persist],
+  );
+
+  const toggleApp = useCallback(
+    (id: string) => {
+      persist((prev) => {
+        const on = prev.installedApps.includes(id);
+        return {
+          ...prev,
+          installedApps: on
+            ? prev.installedApps.filter((x) => x !== id)
+            : [...prev.installedApps, id],
+        };
+      });
+    },
+    [persist],
+  );
+
+  const setHomePins = useCallback(
+    (role: DemoRole, pins: HomeWidgetId[]) => {
+      persist((prev) => ({
+        ...prev,
+        homePins: { ...prev.homePins, [role]: pins },
+      }));
+    },
+    [persist],
+  );
+
+  const setInsightView = useCallback(
+    (board: InsightBoard) => {
+      persist((prev) => ({ ...prev, insightView: board }));
+    },
+    [persist],
+  );
+
+  const startLearnAssignment = useCallback(
+    (id: string) => {
+      let ok = false;
+      persist((prev) => {
+        const row = prev.learnAssignments.find((a) => a.id === id);
+        if (!row || row.status === "Completed") return prev;
+        ok = true;
+        return {
+          ...prev,
+          learnAssignments: prev.learnAssignments.map((a) =>
+            a.id === id
+              ? {
+                  ...a,
+                  status: "In progress" as const,
+                  progress: Math.max(a.progress, 25),
+                }
+              : a,
+          ),
+        };
+      });
+      return ok;
+    },
+    [persist],
+  );
+
+  const completeLearnAssignment = useCallback(
+    (id: string) => {
+      let cert: LearnCertificate | null = null;
+      persist((prev) => {
+        const row = prev.learnAssignments.find((a) => a.id === id);
+        if (!row || row.status === "Completed") return prev;
+        const course = courseById(row.courseId);
+        const certId = `cert-${row.workerId}-${row.courseId}-${Date.now()}`;
+        cert = {
+          id: certId,
+          assignmentId: id,
+          workerId: row.workerId,
+          courseTitle: course?.title ?? row.courseId,
+          issued: WF_TODAY,
+        };
+        const title = course?.title ?? "";
+        return {
+          ...prev,
+          learnAssignments: prev.learnAssignments.map((a) =>
+            a.id === id
+              ? {
+                  ...a,
+                  status: "Completed" as const,
+                  progress: 100,
+                  completedAt: WF_TODAY,
+                  certificateId: certId,
+                }
+              : a,
+          ),
+          learnCertificates: [cert, ...prev.learnCertificates],
+          inbox: prev.inbox.map((t) =>
+            !t.done &&
+            /security awareness/i.test(t.title) &&
+            /security awareness/i.test(title)
+              ? { ...t, done: true }
+              : t,
+          ),
+        };
+      });
+      return cert;
+    },
+    [persist],
+  );
+
+  const assignLearnCourse = useCallback(
+    (workerId: string, courseId: string, due: string) => {
+      const course = courseById(courseId);
+      if (!course || !workerId) return null;
+      let created: string | null = null;
+      persist((prev) => {
+        const open = prev.learnAssignments.find(
+          (a) =>
+            a.workerId === workerId &&
+            a.courseId === courseId &&
+            a.status !== "Completed",
+        );
+        if (open) {
+          created = open.id;
+          return prev;
+        }
+        const id = `la-${workerId}-${courseId}-${Date.now()}`;
+        created = id;
+        return {
+          ...prev,
+          learnAssignments: [
+            {
+              id,
+              courseId,
+              workerId,
+              status: "Assigned",
+              progress: 0,
+              due,
+              assignedAt: WF_TODAY,
+            },
+            ...prev.learnAssignments,
+          ],
+        };
+      });
+      return created;
+    },
+    [persist],
+  );
+
+  const rotateDemoApiKey = useCallback(() => {
+    const next = `wb_live_${Math.random().toString(36).slice(2, 10)}`;
+    persist((prev) => ({ ...prev, demoApiKey: next }));
+    return next;
+  }, [persist]);
+
+  const setRetentionDays = useCallback(
+    (days: number) => {
+      persist((prev) => ({ ...prev, retentionDays: days }));
+    },
+    [persist],
+  );
+
+  const addHrCase = useCallback(
+    (input: {
+      workerId: string;
+      category: CaseCategory;
+      subject: string;
+      body: string;
+    }) => {
+      const id = `case-${Date.now()}`;
+      const inboxTaskId = `in-${id}`;
+      const row: HrCase = {
+        ...input,
+        id,
+        status: "Open",
+        createdAt: WF_TODAY,
+        inboxTaskId,
+      };
+      persist((prev) => ({
+        ...prev,
+        hrCases: [row, ...prev.hrCases],
+        inbox: [
+          {
+            id: inboxTaskId,
+            title: `HR case: ${input.subject}`,
+            kind: "todo",
+            due: addDaysIso(WF_TODAY, 3),
+            done: false,
+            forRoles: ["hr_admin"],
+          },
+          ...prev.inbox,
+        ],
+      }));
+      return row;
+    },
+    [persist],
+  );
+
+  const setCaseStatus = useCallback(
+    (id: string, status: CaseStatus) => {
+      persist((prev) => {
+        const row = prev.hrCases.find((c) => c.id === id);
+        return {
+          ...prev,
+          hrCases: prev.hrCases.map((c) =>
+            c.id === id ? { ...c, status } : c,
+          ),
+          inbox:
+            status === "Resolved" && row
+              ? prev.inbox.map((t) =>
+                  t.id === row.inboxTaskId ? { ...t, done: true } : t,
+                )
+              : prev.inbox,
+        };
+      });
+    },
+    [persist],
+  );
+
+  const addDelegation = useCallback(
+    (input: {
+      fromWorkerId: string;
+      toWorkerId: string;
+      scope: DelegationScope;
+      end: string;
+    }) => {
+      if (input.fromWorkerId === input.toWorkerId) return null;
+      let created: Delegation | null = null;
+      persist((prev) => {
+        if (
+          prev.delegations.some(
+            (d) => d.fromWorkerId === input.fromWorkerId && d.end >= WF_TODAY,
+          )
+        ) {
+          return prev;
+        }
+        const id = `del-${Date.now()}`;
+        const inboxTaskId = `in-${id}`;
+        created = {
+          id,
+          ...input,
+          start: WF_TODAY,
+          inboxTaskId,
+        };
+        return {
+          ...prev,
+          delegations: [created, ...prev.delegations],
+          inbox: [
+            {
+              id: inboxTaskId,
+              title: `Acting for ${workerName(input.fromWorkerId)} (${input.scope}) until ${input.end}`,
+              kind: "todo",
+              due: input.end,
+              done: false,
+              forRoles: ["manager", "hr_admin", "employee", "finance"],
+              workerId: input.toWorkerId,
+            },
+            ...prev.inbox,
+          ],
+        };
+      });
+      return created;
+    },
+    [persist],
+  );
+
+  const setCompProposed = useCallback(
+    (id: string, proposed: number) => {
+      persist((prev) => ({
+        ...prev,
+        compWorksheets: prev.compWorksheets.map((w) =>
+          w.id === id && w.status === "Draft" ? { ...w, proposed } : w,
+        ),
+      }));
+    },
+    [persist],
+  );
+
+  const submitComp = useCallback(
+    (id: string) => {
+      let ok = false;
+      persist((prev) => {
+        const row = prev.compWorksheets.find((w) => w.id === id);
+        if (!row || row.status !== "Draft") return prev;
+        ok = true;
+        const inboxId = `in-comp-${id}`;
+        return {
+          ...prev,
+          compWorksheets: prev.compWorksheets.map((w) =>
+            w.id === id ? { ...w, status: "Submitted" } : w,
+          ),
+          inbox: [
+            {
+              id: inboxId,
+              title: `Merit review: ${workerName(row.workerId)}`,
+              kind: "approval",
+              due: addDaysIso(WF_TODAY, 7),
+              done: false,
+              forRoles: ["hr_admin"],
+            },
+            ...prev.inbox,
+          ],
+        };
+      });
+      return ok;
+    },
+    [persist],
+  );
+
+  const applyInternal = useCallback(
+    (workerId: string, jobId: string) => {
+      let created: InternalApplication | null = null;
+      persist((prev) => {
+        if (
+          prev.internalApps.some(
+            (a) =>
+              a.workerId === workerId &&
+              a.jobId === jobId &&
+              a.status === "Applied",
+          )
+        ) {
+          return prev;
+        }
+        const job = prev.jobs.find((j) => j.id === jobId);
+        const id = `ia-${Date.now()}`;
+        const inboxTaskId = `in-${id}`;
+        created = {
+          id,
+          workerId,
+          jobId,
+          at: WF_TODAY,
+          status: "Applied",
+          inboxTaskId,
+        };
+        return {
+          ...prev,
+          internalApps: [created, ...prev.internalApps],
+          inbox: [
+            {
+              id: inboxTaskId,
+              title: `Internal apply: ${workerName(workerId)} → ${job?.title ?? jobId}`,
+              kind: "todo",
+              due: addDaysIso(WF_TODAY, 5),
+              done: false,
+              forRoles: ["manager", "hr_admin"],
+              workerId: job?.hiringManagerId,
+            },
+            ...prev.inbox,
+          ],
+        };
+      });
+      return created;
+    },
+    [persist],
+  );
+
+  const withdrawInternal = useCallback(
+    (id: string) => {
+      persist((prev) => {
+        const row = prev.internalApps.find((a) => a.id === id);
+        return {
+          ...prev,
+          internalApps: prev.internalApps.map((a) =>
+            a.id === id ? { ...a, status: "Withdrawn" } : a,
+          ),
+          inbox: row
+            ? prev.inbox.map((t) =>
+                t.id === row.inboxTaskId ? { ...t, done: true } : t,
+              )
+            : prev.inbox,
+        };
+      });
+    },
+    [persist],
+  );
+
+  const saveElection = useCallback(
+    (election: BenefitElection) => {
+      persist((prev) => ({
+        ...prev,
+        elections: [
+          election,
+          ...prev.elections.filter((e) => e.workerId !== election.workerId),
+        ],
+      }));
+    },
+    [persist],
+  );
+
+  const requestMove = useCallback(
+    (input: {
+      kind: OrgMoveKind;
+      workerId: string;
+      fromTitle: string;
+      toTitle: string;
+      toDepartmentId: string;
+    }) => {
+      const id = `mv-${Date.now()}`;
+      const inboxTaskId = `in-${id}`;
+      const row: OrgMove = {
+        ...input,
+        id,
+        status: "Submitted",
+        createdAt: WF_TODAY,
+        inboxTaskId,
+      };
+      persist((prev) => ({
+        ...prev,
+        orgMoves: [row, ...prev.orgMoves],
+        inbox: [
+          {
+            id: inboxTaskId,
+            title: `${input.kind}: ${input.fromTitle} → ${input.toTitle}`,
+            kind: "approval",
+            due: addDaysIso(WF_TODAY, 5),
+            done: false,
+            forRoles: ["hr_admin", "manager"],
+          },
+          ...prev.inbox,
+        ],
+      }));
+      return row;
+    },
+    [persist],
+  );
+
+  const decideMove = useCallback(
+    (id: string, status: "Approved" | "Denied") => {
+      persist((prev) => {
+        const row = prev.orgMoves.find((m) => m.id === id);
+        return {
+          ...prev,
+          orgMoves: prev.orgMoves.map((m) =>
+            m.id === id ? { ...m, status } : m,
+          ),
+          inbox: row
+            ? prev.inbox.map((t) =>
+                t.id === row.inboxTaskId ? { ...t, done: true } : t,
+              )
+            : prev.inbox,
+        };
+      });
+    },
+    [persist],
+  );
+
+  const assignAsset = useCallback(
+    (id: string, workerId: string) => {
+      persist((prev) => ({
+        ...prev,
+        assets: prev.assets.map((a) =>
+          a.id === id
+            ? { ...a, workerId, status: "Assigned" as const }
+            : a,
+        ),
+      }));
+    },
+    [persist],
+  );
+
+  const returnAsset = useCallback(
+    (id: string) => {
+      persist((prev) => ({
+        ...prev,
+        assets: prev.assets.map((a) =>
+          a.id === id
+            ? { ...a, workerId: null, status: "Available" as const }
+            : a,
+        ),
+      }));
+    },
+    [persist],
+  );
+
+  const requestAccess = useCallback(
+    (input: { workerId: string; app: AccessApp; roleLabel: string }) => {
+      let created: AccessRequest | null = null;
+      persist((prev) => {
+        const dup = prev.accessRequests.find(
+          (r) =>
+            r.workerId === input.workerId &&
+            r.app === input.app &&
+            r.status === "Open",
+        );
+        if (dup) return prev;
+        const id = `acc-${Date.now()}`;
+        const inboxTaskId = `in-${id}`;
+        created = {
+          ...input,
+          id,
+          status: "Open",
+          createdAt: WF_TODAY,
+          inboxTaskId,
+        };
+        return {
+          ...prev,
+          accessRequests: [created, ...prev.accessRequests],
+          inbox: [
+            {
+              id: inboxTaskId,
+              title: `Access request: ${input.app} ${input.roleLabel}`,
+              kind: "todo",
+              due: addDaysIso(WF_TODAY, 3),
+              done: false,
+              forRoles: ["hr_admin"],
+            },
+            ...prev.inbox,
+          ],
+        };
+      });
+      return created;
+    },
+    [persist],
+  );
+
+  const decideAccess = useCallback(
+    (id: string, status: "Approved" | "Denied") => {
+      persist((prev) => {
+        const row = prev.accessRequests.find((r) => r.id === id);
+        return {
+          ...prev,
+          accessRequests: prev.accessRequests.map((r) =>
+            r.id === id ? { ...r, status } : r,
+          ),
+          inbox: row
+            ? prev.inbox.map((t) =>
+                t.id === row.inboxTaskId ? { ...t, done: true } : t,
+              )
+            : prev.inbox,
+        };
+      });
+    },
+    [persist],
+  );
+
+  const saveEligibility = useCallback(
+    (input: {
+      workerId: string;
+      status: EligibilityStatus;
+      docs: string[];
+    }) => {
+      persist((prev) => ({
+        ...prev,
+        eligibility: [
+          {
+            workerId: input.workerId,
+            status: input.status,
+            docs: [...input.docs],
+            updatedAt: WF_TODAY,
+          },
+          ...prev.eligibility.filter((e) => e.workerId !== input.workerId),
+        ],
+      }));
+    },
+    [persist],
+  );
+
+  const calculatePayRun = useCallback(
+    (id: string) => {
+      const run = state.payrollRuns.find((r) => r.id === id);
+      if (!run || run.status === "Complete") return false;
+      persist((prev) => {
+        const current = prev.payrollRuns.find((r) => r.id === id);
+        if (!current || current.status === "Complete") return prev;
+        const results = calculateResults(
+          current.groupId,
+          prev.garnishments,
+          prev.retroAdjustments,
+        );
+        return {
+          ...prev,
+          payrollRuns: prev.payrollRuns.map((r) =>
+            r.id === id ? { ...r, status: "Calculated" as const, results } : r,
+          ),
+        };
+      });
+      return true;
+    },
+    [persist, state.payrollRuns],
+  );
+
+  const completePayRun = useCallback(
+    (id: string) => {
+      const run = state.payrollRuns.find((r) => r.id === id);
+      if (!run || run.status !== "Calculated") return false;
+      persist((prev) => {
+        const current = prev.payrollRuns.find((r) => r.id === id);
+        if (!current || current.status !== "Calculated") return prev;
+        const stubs = current.results.map((row) => resultToStub(current, row));
+        return {
+          ...prev,
+          payrollRuns: prev.payrollRuns.map((r) =>
+            r.id === id ? { ...r, status: "Complete" as const } : r,
+          ),
+          extraPayStubs: [...stubs, ...prev.extraPayStubs],
+          retroAdjustments: prev.retroAdjustments.map((r) =>
+            r.appliedToRunId
+              ? r
+              : current.results.some((x) => x.workerId === r.workerId && x.retro)
+                ? { ...r, appliedToRunId: id }
+                : r,
+          ),
+          inbox: [
+            {
+              id: `in-pay-${id}`,
+              title: `Pay run ${id} posted (${current.payDate})`,
+              kind: "todo" as const,
+              due: current.payDate,
+              done: false,
+              forRoles: ["finance" as const, "hr_admin" as const],
+            },
+            ...prev.inbox,
+          ],
+        };
+      });
+      return true;
+    },
+    [persist, state.payrollRuns],
+  );
+
+  const addOffCycle = useCallback(
+    (input: { workerId: string; amount: number; reason: string }) => {
+      persist((prev) => ({
+        ...prev,
+        offCyclePays: [
+          {
+            id: `oc-${Date.now()}`,
+            workerId: input.workerId,
+            amount: input.amount,
+            reason: input.reason,
+            payDate: WF_TODAY,
+            status: "Draft",
+          },
+          ...prev.offCyclePays,
+        ],
+      }));
+    },
+    [persist],
+  );
+
+  const payOffCycle = useCallback(
+    (id: string) => {
+      const row = state.offCyclePays.find((o) => o.id === id);
+      if (!row || row.status === "Paid") return false;
+      persist((prev) => {
+        const current = prev.offCyclePays.find((o) => o.id === id);
+        if (!current || current.status === "Paid") return prev;
+        const taxes = Math.round(current.amount * 0.22 * 100) / 100;
+        const net = Math.round((current.amount - taxes) * 100) / 100;
+        return {
+          ...prev,
+          offCyclePays: prev.offCyclePays.map((o) =>
+            o.id === id ? { ...o, status: "Paid" as const } : o,
+          ),
+          extraPayStubs: [
+            {
+              id: `pay-oc-${id}`,
+              workerId: current.workerId,
+              period: `Off-cycle ${current.payDate}`,
+              payDate: current.payDate,
+              net,
+              gross: current.amount,
+              taxes,
+              deductions: 0,
+              earnings: [
+                { label: current.reason || "Off-cycle", amount: current.amount },
+              ],
+              taxLines: [{ label: "Withholding", amount: taxes }],
+              deductionLines: [],
+            },
+            ...prev.extraPayStubs,
+          ],
+        };
+      });
+      return true;
+    },
+    [persist, state.offCyclePays],
+  );
+
+  const addGarnishment = useCallback(
+    (input: {
+      workerId: string;
+      agency: string;
+      amountPerPeriod: number;
+    }) => {
+      persist((prev) => ({
+        ...prev,
+        garnishments: [
+          {
+            id: `gar-${Date.now()}`,
+            workerId: input.workerId,
+            agency: input.agency,
+            amountPerPeriod: input.amountPerPeriod,
+            status: "Active",
+          },
+          ...prev.garnishments,
+        ],
+      }));
+    },
+    [persist],
+  );
+
+  const releaseGarnishment = useCallback(
+    (id: string) => {
+      persist((prev) => ({
+        ...prev,
+        garnishments: prev.garnishments.map((g) =>
+          g.id === id ? { ...g, status: "Released" as const } : g,
+        ),
+      }));
+    },
+    [persist],
+  );
+
+  const addRetro = useCallback(
+    (input: {
+      workerId: string;
+      amount: number;
+      note: string;
+      periodLabel: string;
+    }) => {
+      persist((prev) => ({
+        ...prev,
+        retroAdjustments: [
+          {
+            id: `ret-${Date.now()}`,
+            ...input,
+          },
+          ...prev.retroAdjustments,
+        ],
+      }));
+    },
+    [persist],
+  );
+
   const alexBalances = leaveBalancesFor("w-alex");
   const pto = {
     vacationHours: alexBalances.find((b) => b.type === "Vacation")?.remaining ?? 0,
@@ -869,7 +1836,8 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
       ready,
       state,
       pto,
-      payStubs: SEED_PAY_STUBS,
+      payStubs: [...state.extraPayStubs, ...SEED_PAY_STUBS],
+      payPeriods: SEED_PAY_PERIODS,
       events: SEED_EVENTS,
       benefits: SEED_BENEFITS,
       beneficiaries: SEED_BENEFICIARIES,
@@ -924,6 +1892,38 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
       createPulsePlan,
       appendAgentAudit,
       clearAgentAudit,
+      setWorkflow,
+      toggleIntegration,
+      toggleApp,
+      setHomePins,
+      setInsightView,
+      startLearnAssignment,
+      completeLearnAssignment,
+      assignLearnCourse,
+      rotateDemoApiKey,
+      setRetentionDays,
+      addHrCase,
+      setCaseStatus,
+      addDelegation,
+      setCompProposed,
+      submitComp,
+      applyInternal,
+      withdrawInternal,
+      saveElection,
+      requestMove,
+      decideMove,
+      assignAsset,
+      returnAsset,
+      requestAccess,
+      decideAccess,
+      saveEligibility,
+      calculatePayRun,
+      completePayRun,
+      addOffCycle,
+      payOffCycle,
+      addGarnishment,
+      releaseGarnishment,
+      addRetro,
     }),
     [
       ready,
@@ -974,6 +1974,38 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
       createPulsePlan,
       appendAgentAudit,
       clearAgentAudit,
+      setWorkflow,
+      toggleIntegration,
+      toggleApp,
+      setHomePins,
+      setInsightView,
+      startLearnAssignment,
+      completeLearnAssignment,
+      assignLearnCourse,
+      rotateDemoApiKey,
+      setRetentionDays,
+      addHrCase,
+      setCaseStatus,
+      addDelegation,
+      setCompProposed,
+      submitComp,
+      applyInternal,
+      withdrawInternal,
+      saveElection,
+      requestMove,
+      decideMove,
+      assignAsset,
+      returnAsset,
+      requestAccess,
+      decideAccess,
+      saveEligibility,
+      calculatePayRun,
+      completePayRun,
+      addOffCycle,
+      payOffCycle,
+      addGarnishment,
+      releaseGarnishment,
+      addRetro,
     ],
   );
 

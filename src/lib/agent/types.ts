@@ -28,6 +28,23 @@ export type AgentContext = {
   pulseCampaignTitle: string;
   pulseCloses: string;
   benefits: BenefitEnrollment[];
+  openCases: number;
+  enrollmentDone: boolean;
+  openInternalJobs: number;
+  assignedAssets: { kind: string; tag: string }[];
+  openAccess: number;
+  openMoves: number;
+  nextPayDate: string;
+  openRunStatus: string;
+  activeGarnish: number;
+  insightHeadcount: number;
+  insightPipeline: number;
+  insightOpenJobs: number;
+  insightSpendVariance: number;
+  insightDrafts: number;
+  learnAssigned: number;
+  learnOverdue: number;
+  learnOpenTitle: string | null;
 };
 
 export type AgentSource = "rules" | "llm";
@@ -49,4 +66,7 @@ export type AgentReply = {
     merchant: string;
     category: string;
   };
+  fileCase?: { category: "Payroll" | "Benefits" | "Time" | "Other"; subject: string };
+  requestAccess?: { app: "GitHub" | "VPN" | "Finance ledger" | "People admin"; roleLabel: string };
+  completeLearnId?: string;
 };

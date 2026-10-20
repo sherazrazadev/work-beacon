@@ -41,6 +41,17 @@ export default function ResourcesPage() {
           ))}
           <li className="border-t border-[var(--border)] pt-4">
             <Link
+              href="/blog"
+              className="font-[family-name:var(--font-display)] text-xl font-semibold hover:text-[var(--accent)]"
+            >
+              Blog
+            </Link>
+            <p className="mt-2 text-sm text-[var(--fg-muted)]">
+              Dated notes on HR, finance, IT, and agents.
+            </p>
+          </li>
+          <li className="border-t border-[var(--border)] pt-4">
+            <Link
               href="/customers"
               className="font-[family-name:var(--font-display)] text-xl font-semibold hover:text-[var(--accent)]"
             >

@@ -85,10 +85,10 @@ export function AgentPanel() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-50 flex items-end justify-end sm:items-stretch">
       <button
         type="button"
-        className="absolute inset-0 bg-[color-mix(in_oklab,var(--fg)_35%,transparent)]"
+        className="absolute inset-0 top-14 bg-[color-mix(in_oklab,var(--fg)_28%,transparent)] sm:top-0"
         aria-label="Close agent"
         onClick={() => setOpen(false)}
       />
@@ -98,18 +98,9 @@ export function AgentPanel() {
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "relative flex h-full w-full max-w-md flex-col border-l border-[var(--border)] bg-[var(--surface)] shadow-2xl",
-          "animate-in slide-in-from-right duration-200",
+          "relative flex max-h-[min(85dvh,40rem)] w-full flex-col border-t border-[var(--border)] bg-[var(--surface)] shadow-2xl sm:h-full sm:max-h-none sm:max-w-md sm:border-t-0 sm:border-l",
         )}
-        style={{ animation: "wb-agent-in 180ms ease-out" }}
       >
-        <style>{`
-          @keyframes wb-agent-in {
-            from { transform: translateX(100%); opacity: 0.6; }
-            to { transform: translateX(0); opacity: 1; }
-          }
-        `}</style>
-
         <header className="flex items-start justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
           <div>
             <h2
@@ -151,7 +142,7 @@ export function AgentPanel() {
             <button
               key={p.id}
               type="button"
-              className="rounded-md border border-[var(--accent)] px-2.5 py-1 text-xs text-[var(--fg)] hover:bg-[var(--surface-muted)]"
+              className="min-h-8 rounded-md border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-1 text-xs text-[var(--fg)] hover:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
               onClick={() => send(p.prompt)}
             >
               {p.label}
@@ -161,7 +152,7 @@ export function AgentPanel() {
             <button
               key={p.id}
               type="button"
-              className="rounded-md border border-[var(--border)] px-2.5 py-1 text-xs text-[var(--fg-muted)] hover:border-[var(--accent)] hover:text-[var(--fg)]"
+              className="min-h-8 rounded-md border border-[var(--border)] px-2.5 py-1 text-xs text-[var(--fg-muted)] hover:text-[var(--fg)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
               onClick={() => send(p.text)}
             >
               {p.label}

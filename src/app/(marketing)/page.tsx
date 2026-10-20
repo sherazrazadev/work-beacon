@@ -1,6 +1,7 @@
 import { AgentBlock } from "@/components/home/agent-block";
 import { AgentsHub } from "@/components/home/agents-hub";
 import { AskChips } from "@/components/home/ask-chips";
+import { BlogTeaser } from "@/components/home/blog-teaser";
 import { BottomCta } from "@/components/home/bottom-cta";
 import { CustomerStories } from "@/components/home/customer-stories";
 import { EcosystemTeasers } from "@/components/home/ecosystem-teasers";
@@ -18,6 +19,7 @@ export default function HomePage() {
       <AgentsHub />
       <AgentBlock />
       <CustomerStories />
+      <BlogTeaser />
       <EcosystemTeasers />
       <BottomCta />
     </>

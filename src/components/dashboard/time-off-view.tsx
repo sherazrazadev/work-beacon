@@ -3,8 +3,10 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Field, SelectInput, TextInput } from "@/components/ui/field";
 import { useAuth } from "@/components/auth/auth-provider";
 import { useMock } from "@/components/dashboard/mock-provider";
+import { StackTable } from "@/components/ui/stack-table";
 import type { TimeOffRequest } from "@/lib/mock";
 
 const PREFILL_KEY = "work-beacon-timeoff-prefill";
@@ -23,6 +25,7 @@ export function TimeOffView() {
   const [end, setEnd] = useState("");
   const [hours, setHours] = useState("8");
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -38,6 +41,7 @@ export function TimeOffView() {
       if (data.start) setStart(data.start);
       if (data.end) setEnd(data.end);
       if (data.hours) setHours(String(data.hours));
+      setError(null);
       setMessage("Prefilled from Work Beacon Agent — review and submit.");
       window.sessionStorage.removeItem(PREFILL_KEY);
     } catch {
@@ -49,17 +53,20 @@ export function TimeOffView() {
     e.preventDefault();
     const h = Number(hours);
     if (!start || !end || !Number.isFinite(h) || h <= 0) {
-      setMessage("Enter start, end, and hours.");
+      setError("Enter start, end, and hours.");
+      setMessage(null);
       return;
     }
     const remaining = balances.find((b) => b.type === type)?.remaining ?? 0;
     if (h > remaining) {
-      setMessage(
+      setError(
         `${type} remaining is ${remaining}h. Reduce hours or pick another type.`,
       );
+      setMessage(null);
       return;
     }
     addTimeOff({ type, start, end, hours: h, workerId });
+    setError(null);
     setMessage("Request submitted (pending).");
     setStart("");
     setEnd("");
@@ -90,7 +97,7 @@ export function TimeOffView() {
             <p className="text-xs uppercase tracking-wider text-[var(--fg-muted)]">
               {b.type}
             </p>
-            <p className="mt-1 font-[family-name:var(--font-display)] text-3xl font-bold text-[var(--accent)]">
+            <p className="mt-1 font-[family-name:var(--font-display)] text-2xl font-semibold tabular-nums text-[var(--fg)]">
               {b.remaining}h
             </p>
             <p className="mt-1 text-xs text-[var(--fg-muted)]">
@@ -103,63 +110,70 @@ export function TimeOffView() {
 
       <form
         onSubmit={onSubmit}
-        className="max-w-xl space-y-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4"
+        className="max-w-xl space-y-4 rounded-md border border-[var(--border)] bg-[var(--surface)] p-4"
       >
         <h2 className="text-sm font-semibold text-[var(--fg)]">New request</h2>
-        <label className="block text-sm text-[var(--fg-muted)]">
-          Type
-          <select
+        <Field label="Type">
+          <SelectInput
             value={type}
             onChange={(e) => setType(e.target.value as TimeOffRequest["type"])}
-            className="mt-1 w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[var(--fg)]"
           >
             <option>Vacation</option>
             <option>Sick</option>
             <option>Personal</option>
-          </select>
-        </label>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="block text-sm text-[var(--fg-muted)]">
-            Start
-            <input
+          </SelectInput>
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Start">
+            <TextInput
               type="date"
               value={start}
               onChange={(e) => setStart(e.target.value)}
-              className="mt-1 w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[var(--fg)]"
               required
             />
-          </label>
-          <label className="block text-sm text-[var(--fg-muted)]">
-            End
-            <input
+          </Field>
+          <Field label="End">
+            <TextInput
               type="date"
               value={end}
               onChange={(e) => setEnd(e.target.value)}
-              className="mt-1 w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[var(--fg)]"
               required
             />
-          </label>
+          </Field>
         </div>
-        <label className="block text-sm text-[var(--fg-muted)]">
-          Hours
-          <input
+        <Field label="Hours" error={error}>
+          <TextInput
             type="number"
             min={1}
             value={hours}
             onChange={(e) => setHours(e.target.value)}
-            className="mt-1 w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[var(--fg)]"
             required
           />
-        </label>
+        </Field>
         {message ? (
-          <p className="text-sm text-[var(--accent)]" role="status">
+          <p className="text-sm" role="status">
             {message}
           </p>
         ) : null}
-        <Button type="submit">Submit request</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="submit">Submit request</Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              setStart("");
+              setEnd("");
+              setHours("8");
+              setError(null);
+              setMessage(null);
+            }}
+          >
+            Clear
+          </Button>
+        </div>
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+      <StackTable className="sm:rounded-xl sm:border sm:border-[var(--border)] sm:bg-[var(--surface)]">
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-[var(--border)] text-[var(--fg-muted)]">
             <tr>
@@ -185,7 +199,7 @@ export function TimeOffView() {
             ))}
           </tbody>
         </table>
-      </div>
+      </StackTable>
     </div>
   );
 }

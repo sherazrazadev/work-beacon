@@ -495,12 +495,28 @@ export const SEED_INBOX: InboxTask[] = [
     forRoles: ["manager", "finance", "hr_admin"],
   },
   {
+    id: "in-case-1",
+    title: "HR case: Missing overtime on Oct stub",
+    kind: "todo",
+    due: "2026-10-23",
+    done: false,
+    forRoles: ["hr_admin"],
+  },
+  {
     id: "in-5",
     title: "Confirm cost center mapping for CC-200",
     kind: "todo",
     due: "2026-10-28",
     done: false,
     forRoles: ["finance", "hr_admin"],
+  },
+  {
+    id: "in-acc-1",
+    title: "Access request: GitHub org admin — Casey Nguyen",
+    kind: "todo",
+    due: "2026-10-22",
+    done: false,
+    forRoles: ["hr_admin"],
   },
 ];
 

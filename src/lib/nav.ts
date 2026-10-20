@@ -104,6 +104,29 @@ export const MEGA_NAV: MegaItem[] = [
       },
     ],
   },
+  {
+    id: "resources",
+    label: "Resources",
+    href: "/resources",
+    columns: [
+      {
+        title: "Read",
+        links: [
+          { href: "/blog", label: "Blog", blurb: "HR, finance, and agent notes" },
+          { href: "/resources", label: "Resource library" },
+          { href: "/resources/guides/agent-guardrails", label: "Guides" },
+        ],
+      },
+      {
+        title: "Watch",
+        links: [
+          { href: "/resources/demos", label: "Demos" },
+          { href: "/resources/webinars", label: "Webinars" },
+          { href: "/resources/events", label: "Events" },
+        ],
+      },
+    ],
+  },
 ];
 
 export const MORE_SITES: NavLink[] = [

@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { DataTable, Td, Th, Tr } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { DashboardSkeleton } from "@/components/dashboard/skeleton";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -37,7 +38,8 @@ export function PayView() {
 
   if (!ready) return <DashboardSkeleton />;
 
-  const ytd = payYtd(payStubs);
+  const mine = payStubs.filter((s) => !s.workerId || s.workerId === workerId);
+  const ytd = payYtd(mine);
   const rewards = SEED_TOTAL_REWARDS;
   const totalRewards =
     rewards.base + rewards.bonus + rewards.benefitsEmployer;
@@ -84,7 +86,7 @@ export function PayView() {
         <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--fg-muted)]">
           Year-to-date {rewards.year}
         </h2>
-        <dl className="mt-3 grid gap-3 sm:grid-cols-4">
+        <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {(
             [
               ["Gross", ytd.gross],
@@ -95,7 +97,7 @@ export function PayView() {
           ).map(([label, n]) => (
             <div
               key={label}
-              className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4"
+              className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 sm:p-4"
             >
               <dt className="text-xs text-[var(--fg-muted)]">{label}</dt>
               <dd className="mt-1 font-[family-name:var(--font-display)] text-lg font-semibold">
@@ -110,7 +112,7 @@ export function PayView() {
         <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--fg-muted)]">
           Statements
         </h2>
-        {payStubs.length === 0 ? (
+        {mine.length === 0 ? (
           <EmptyState
             title="No pay stubs yet"
             body="When payroll runs, stubs will show up here."
@@ -118,29 +120,32 @@ export function PayView() {
             actionLabel="Back to home"
           />
         ) : (
-          <ul className="mt-3 divide-y divide-[var(--border)] rounded-xl border border-[var(--border)] bg-[var(--surface)]">
-            {payStubs.map((stub) => (
-              <li
-                key={stub.id}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
-              >
-                <div>
-                  <p className="font-medium text-[var(--fg)]">{stub.period}</p>
-                  <p className="text-xs text-[var(--fg-muted)]">
-                    Paid {stub.payDate}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-[family-name:var(--font-display)] font-semibold">
-                    {moneyUsd(stub.net)}
-                  </span>
-                  <Button asChild size="sm" variant="secondary">
-                    <Link href={`/dashboard/pay/${stub.id}`}>Details</Link>
-                  </Button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="mt-3">
+            <DataTable>
+              <thead>
+                <tr>
+                  <Th>Period</Th>
+                  <Th>Paid</Th>
+                  <Th numeric>Net</Th>
+                  <Th />
+                </tr>
+              </thead>
+              <tbody>
+                {mine.map((stub) => (
+                  <Tr key={stub.id}>
+                    <Td>{stub.period}</Td>
+                    <Td className="text-[var(--fg-muted)]">{stub.payDate}</Td>
+                    <Td numeric>{moneyUsd(stub.net)}</Td>
+                    <Td>
+                      <Button asChild size="sm" variant="secondary">
+                        <Link href={`/dashboard/pay/${stub.id}`}>Details</Link>
+                      </Button>
+                    </Td>
+                  </Tr>
+                ))}
+              </tbody>
+            </DataTable>
+          </div>
         )}
       </section>
 
@@ -301,7 +306,7 @@ export function PayView() {
         <p className="mt-1 text-sm text-[var(--fg-muted)]">
           Annual view of cash plus employer-paid benefits cost.
         </p>
-        <dl className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <dl className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {(
             [
               ["Base salary", rewards.base],
@@ -312,7 +317,7 @@ export function PayView() {
           ).map(([label, n]) => (
             <div
               key={label}
-              className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4"
+              className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 sm:p-4"
             >
               <dt className="text-xs text-[var(--fg-muted)]">{label}</dt>
               <dd className="mt-1 font-[family-name:var(--font-display)] text-lg font-semibold">

@@ -29,7 +29,7 @@ export default function MarketplacePage() {
               </h2>
               <p className="mt-2 text-sm text-[var(--fg-muted)]">{app.blurb}</p>
               <p className="mt-4 text-sm font-medium text-[var(--accent)]">
-                Install (demo) →
+                <Link href="/dashboard/marketplace">Install in tenant →</Link>
               </p>
             </li>
           ))}

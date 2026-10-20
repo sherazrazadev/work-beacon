@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useMock } from "@/components/dashboard/mock-provider";
+import { StackTable } from "@/components/ui/stack-table";
 import { Button } from "@/components/ui/button";
 import { DashboardSkeleton } from "@/components/dashboard/skeleton";
 import { TENANT, COST_CENTERS, DEPARTMENTS, LOCATIONS, WORKERS } from "@/lib/mock/org";
@@ -67,6 +69,27 @@ export function AdminView() {
       </section>
 
       <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
+        <h2 className="font-semibold">Platform</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button asChild size="sm" variant="secondary">
+            <Link href="/dashboard/workflows">Workflows</Link>
+          </Button>
+          <Button asChild size="sm" variant="secondary">
+            <Link href="/dashboard/events">Events</Link>
+          </Button>
+          <Button asChild size="sm" variant="secondary">
+            <Link href="/dashboard/reports">Reports</Link>
+          </Button>
+          <Button asChild size="sm" variant="secondary">
+            <Link href="/dashboard/integrations">Integrations</Link>
+          </Button>
+          <Button asChild size="sm" variant="secondary">
+            <Link href="/dashboard/security">Security</Link>
+          </Button>
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
         <h2 className="font-semibold">Feature flags</h2>
         <ul className="mt-4 space-y-3 text-sm">
           {(
@@ -117,7 +140,7 @@ export function AdminView() {
             No calls yet. Open the agent and ask a question.
           </p>
         ) : (
-          <div className="mt-3 overflow-x-auto">
+          <StackTable className="mt-3">
             <table className="w-full min-w-[32rem] text-left text-sm">
               <thead>
                 <tr className="border-b border-[var(--border)] text-[var(--fg-muted)]">
@@ -144,7 +167,7 @@ export function AdminView() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </StackTable>
         )}
       </section>
 

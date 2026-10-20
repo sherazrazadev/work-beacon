@@ -53,6 +53,8 @@ export type Expense = {
   receiptName: string;
   receiptKb: number;
   status: ExpenseStatus;
+  /** Current expense-workflow step (0-based). */
+  stepIndex?: number;
 };
 
 export type CatalogItem = {

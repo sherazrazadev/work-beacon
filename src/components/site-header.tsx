@@ -21,6 +21,10 @@ export function SiteHeader() {
         e.preventDefault();
         setSearchOpen(true);
       }
+      if (e.key === "Escape") {
+        setOpenMega(null);
+        setMoreOpen(false);
+      }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -35,8 +39,8 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_90%,transparent)] backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[color-mix(in_oklab,var(--surface)_92%,transparent)] backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4 sm:px-6">
           <Link
             href="/"
             className="shrink-0 font-[family-name:var(--font-display)] text-xl font-bold tracking-tight text-[var(--fg)]"
@@ -46,7 +50,7 @@ export function SiteHeader() {
 
           <nav
             aria-label="Primary"
-            className="ml-4 hidden flex-1 items-center gap-1 lg:flex"
+            className="ml-2 hidden flex-1 items-center gap-0 lg:flex"
             onMouseLeave={() => setOpenMega(null)}
           >
             {MEGA_NAV.map((item) => {
@@ -60,18 +64,16 @@ export function SiteHeader() {
                   <button
                     type="button"
                     className={cn(
-                      "rounded-md px-3 py-2 text-sm text-[var(--fg-muted)] hover:text-[var(--fg)]",
-                      expanded && "text-[var(--fg)]",
+                      "min-h-10 rounded-md px-3 py-2 text-sm text-[var(--fg-muted)] transition-colors duration-150 ease-out hover:bg-[var(--surface-muted)] hover:text-[var(--fg)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]",
+                      expanded && "bg-[var(--surface-muted)] text-[var(--fg)]",
                     )}
                     aria-expanded={expanded}
-                    onClick={() =>
-                      setOpenMega(expanded ? null : item.id)
-                    }
+                    onClick={() => setOpenMega(expanded ? null : item.id)}
                   >
                     {item.label}
                   </button>
                   {expanded ? (
-                    <div className="absolute left-0 top-full z-50 w-[min(90vw,42rem)] rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-lg">
+                    <div className="absolute left-0 top-full z-50 mt-1 w-[min(90vw,40rem)] rounded-md border border-[var(--border)] bg-[var(--surface)] p-6 shadow-lg">
                       <div
                         className={cn(
                           "grid gap-6",
@@ -90,7 +92,7 @@ export function SiteHeader() {
                                 <li key={`${col.title}-${link.label}`}>
                                   <Link
                                     href={link.href}
-                                    className="block text-sm text-[var(--fg)] hover:text-[var(--accent)]"
+                                    className="block rounded-md px-1 py-1 text-sm text-[var(--fg)] hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                                     onClick={() => setOpenMega(null)}
                                   >
                                     {link.label}
@@ -108,7 +110,7 @@ export function SiteHeader() {
                       </div>
                       <Link
                         href={item.href}
-                        className="mt-4 inline-block text-sm font-medium text-[var(--accent)]"
+                        className="mt-4 inline-block text-sm font-medium text-[var(--accent)] hover:text-[var(--accent-hover)]"
                         onClick={() => setOpenMega(null)}
                       >
                         Explore {item.label} →
@@ -123,7 +125,7 @@ export function SiteHeader() {
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
             <button
               type="button"
-              className="hidden rounded-md px-2 py-2 text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] md:inline"
+              className="hidden min-h-10 rounded-md px-2 py-2 text-sm text-[var(--fg-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--fg)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] md:inline"
               onClick={() => setSearchOpen(true)}
               aria-label="Open search"
             >
@@ -133,14 +135,14 @@ export function SiteHeader() {
             <div className="relative hidden md:block">
               <button
                 type="button"
-                className="rounded-md px-2 py-2 text-sm text-[var(--fg-muted)] hover:text-[var(--fg)]"
+                className="min-h-10 rounded-md px-2 py-2 text-sm text-[var(--fg-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--fg)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                 aria-expanded={moreOpen}
                 onClick={() => setMoreOpen((v) => !v)}
               >
                 More Sites
               </button>
               {moreOpen ? (
-                <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-2 shadow-lg">
+                <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-md border border-[var(--border)] bg-[var(--surface)] p-2 shadow-lg">
                   {MORE_SITES.map((site) => (
                     <Link
                       key={site.href}
@@ -167,7 +169,7 @@ export function SiteHeader() {
 
             <button
               type="button"
-              className="rounded-md border border-[var(--border)] px-3 py-2 text-sm lg:hidden"
+              className="min-h-10 rounded-md border border-[var(--border)] px-3 py-2 text-sm hover:bg-[var(--surface-muted)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] lg:hidden"
               aria-expanded={mobileOpen}
               aria-controls={menuId}
               onClick={() => setMobileOpen((v) => !v)}
@@ -198,7 +200,7 @@ export function SiteHeader() {
                         <li key={`${item.id}-${link.label}`}>
                           <Link
                             href={link.href}
-                            className="block py-1 text-sm text-[var(--fg-muted)]"
+                            className="block min-h-11 py-2 text-sm text-[var(--fg-muted)] hover:text-[var(--fg)]"
                             onClick={() => setMobileOpen(false)}
                           >
                             {link.label}
@@ -222,7 +224,7 @@ export function SiteHeader() {
                 </Button>
                 <button
                   type="button"
-                  className="text-left text-sm text-[var(--fg-muted)]"
+                  className="min-h-11 text-left text-sm text-[var(--fg-muted)]"
                   onClick={() => {
                     setMobileOpen(false);
                     setSearchOpen(true);

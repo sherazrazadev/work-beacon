@@ -222,18 +222,101 @@ See `docs/PHASE-2-INDUSTRY.md`. Original Work Beacon features inspired by public
 
 ## EPIC-12 — Platform → `docs/epics/EPIC-12-platform.md`
 
-| ID | Ticket |
-| --- | --- |
-| T12-01 | Workflow builder lite |
-| T12-02 | Business process events |
-| T12-03 | Report gallery |
-| T12-04 | Dashboards builder |
-| T12-05 | Integrations catalog |
-| T12-06 | Webhooks / API explorer |
-| T12-07 | Marketplace apps |
-| T12-08 | Developer portal |
-| T12-09 | Security & compliance center |
-| T12-10 | Platform QA + Phase 2 wrap |
+| ID | Ticket | |
+| --- | --- | --- |
+| T12-01 | Workflow builder lite | ✅ |
+| T12-02 | Business process events | ✅ |
+| T12-03 | Report gallery | ✅ |
+| T12-04 | Dashboards builder | ✅ |
+| T12-05 | Integrations catalog | ✅ |
+| T12-06 | Webhooks / API explorer | ✅ |
+| T12-07 | Marketplace apps | ✅ |
+| T12-08 | Developer portal | ✅ |
+| T12-09 | Security & compliance center | ✅ |
+| T12-10 | Platform QA + Phase 2 wrap | ✅ |
+
+## EPIC-13 — People ops → `docs/epics/EPIC-13-people-ops.md`
+
+| ID | Ticket | |
+| --- | --- | --- |
+| T13-01 | HR cases | ✅ |
+| T13-02 | Delegations | ✅ |
+| T13-03 | Compensation cycle | ✅ |
+| T13-04 | Job architecture | ✅ |
+| T13-05 | Internal mobility | ✅ |
+| T13-06 | Open enrollment wizard | ✅ |
+| T13-07 | Policy knowledge base | ✅ |
+| T13-08 | Contingent workers | ✅ |
+| T13-09 | Agent tools | ✅ |
+| T13-10 | QA gate | ✅ |
+
+## EPIC-14 — Org change, assets & identity → `docs/epics/EPIC-14-org-assets.md`
+
+| ID | Ticket | |
+| --- | --- | --- |
+| T14-01 | Positions / FTE | ✅ |
+| T14-02 | Transfer request | ✅ |
+| T14-03 | Promotion proposal | ✅ |
+| T14-04 | IT assets | ✅ |
+| T14-05 | Checkout / return | ✅ |
+| T14-06 | Access requests | ✅ |
+| T14-07 | Work eligibility | ✅ |
+| T14-08 | Offboarding recall | ✅ |
+| T14-09 | Agent tools | ✅ |
+| T14-10 | QA gate | ✅ |
+
+## EPIC-15 — Payroll operations → `docs/epics/EPIC-15-payroll-ops.md`
+
+| ID | Ticket | |
+| --- | --- | --- |
+| T15-01 | Pay groups | ✅ |
+| T15-02 | Pay calendar | ✅ |
+| T15-03 | Payroll run | ✅ |
+| T15-04 | Off-cycle pay | ✅ |
+| T15-05 | Garnishments | ✅ |
+| T15-06 | Tax pack | ✅ |
+| T15-07 | Stubs from run | ✅ |
+| T15-08 | Retro | ✅ |
+| T15-09 | Agent tools | ✅ |
+| T15-10 | QA gate | ✅ |
+
+## EPIC-16 — Enterprise UI/UX → `docs/epics/EPIC-16-enterprise-ux.md`
+
+| ID | Ticket | |
+| --- | --- | --- |
+| T16-01 | Marketing visual system | ✅ |
+| T16-02 | Dashboard density | ✅ |
+| T16-03 | Data tables | ✅ |
+| T16-04 | Forms & approvals | ✅ |
+| T16-05 | Agent panel | ✅ |
+| T16-06 | Auth / demo entry | ✅ |
+| T16-07 | Visual QA + leak scan | ✅ |
+
+## EPIC-17 — Beacon Insights → `docs/epics/EPIC-17-insights.md`
+
+| ID | Ticket | |
+| --- | --- | --- |
+| T17-01 | People board | ✅ |
+| T17-02 | Talent funnel | ✅ |
+| T17-03 | Time ops | ✅ |
+| T17-04 | Money vs plan | ✅ |
+| T17-05 | Saved board | ✅ |
+| T17-06 | Home pin | ✅ |
+| T17-07 | Agent tools | ✅ |
+| T17-08 | QA gate | ✅ |
+
+## EPIC-18 — Learning operations → `docs/epics/EPIC-18-learning-ops.md`
+
+| ID | Ticket | |
+| --- | --- | --- |
+| T18-01 | Catalog + assignments | ✅ |
+| T18-02 | Start / complete | ✅ |
+| T18-03 | Certificates | ✅ |
+| T18-04 | Team learning | ✅ |
+| T18-05 | Compliance inbox | ✅ |
+| T18-06 | Home pin | ✅ |
+| T18-07 | Agent tools | ✅ |
+| T18-08 | QA gate | ✅ |
 
 ---
 
@@ -255,3 +338,8 @@ See `docs/PHASE-2-INDUSTRY.md`. Original Work Beacon features inspired by public
 - EPIC-06 → EPIC-12 gates passed (`docs/ROADMAP.md`)  
 - Multi-persona demo + Hire-to-Retire + Money paths documented  
 - Agent tools ≥10; LLM optional and off by default  
+
+### Phase 3
+- EPIC-13 gates passed (cases, enrollment, merit, internal jobs)  
+- EPIC-14 gates passed (moves, assets, access, eligibility)  
+- EPIC-15 gates passed (pay run, stubs, garnishments)  

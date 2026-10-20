@@ -2,12 +2,18 @@
 
 import { FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Field, SelectInput, TextInput } from "@/components/ui/field";
 import { EmptyState } from "@/components/empty-state";
 import { DashboardSkeleton } from "@/components/dashboard/skeleton";
 import { useAuth } from "@/components/auth/auth-provider";
 import { useMock } from "@/components/dashboard/mock-provider";
 import { getWorker } from "@/lib/mock/org";
 import { moneyUsd } from "@/lib/mock/money";
+import {
+  pendingExpensesForRole,
+  workflowById,
+  workflowStep,
+} from "@/lib/mock/platform";
 
 const CATEGORIES = ["Software", "Travel", "Meals", "Office", "Other"];
 
@@ -18,6 +24,7 @@ export function ExpensesView() {
   const role = session?.user.role ?? "employee";
   const isManager = role === "manager" || role === "hr_admin";
   const isFinance = role === "finance";
+  const queue = pendingExpensesForRole(state.expenses, state.workflows, role);
 
   const [amount, setAmount] = useState("");
   const [merchant, setMerchant] = useState("");
@@ -25,20 +32,22 @@ export function ExpensesView() {
   const [date, setDate] = useState("2026-10-18");
   const [receiptName, setReceiptName] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   if (!ready) return <DashboardSkeleton />;
 
   const mine = state.expenses.filter((e) => e.workerId === workerId);
-  const pending = state.expenses.filter((e) => e.status === "Submitted");
   const approvedQueue = state.expenses.filter((e) => e.status === "Approved");
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
     const n = Number(amount);
     if (!Number.isFinite(n) || n <= 0 || !merchant.trim()) {
-      setMsg("Amount and merchant are required.");
+      setError("Amount and merchant are required.");
+      setMsg(null);
       return;
     }
+    setError(null);
     addExpense({
       workerId,
       amount: n,
@@ -75,61 +84,69 @@ export function ExpensesView() {
       {!isFinance ? (
         <form
           onSubmit={onSubmit}
-          className="grid max-w-2xl gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:grid-cols-2"
+          className="grid max-w-2xl gap-4 rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 sm:grid-cols-2"
         >
           <h2 className="sm:col-span-2 text-sm font-semibold">New expense</h2>
-          <label className="block text-sm text-[var(--fg-muted)]">
-            Amount
-            <input
+          <Field label="Amount" error={error && !amount ? error : null}>
+            <TextInput
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               inputMode="decimal"
               required
-              className="mt-1 w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[var(--fg)]"
             />
-          </label>
-          <label className="block text-sm text-[var(--fg-muted)]">
-            Merchant
-            <input
+          </Field>
+          <Field label="Merchant" error={error && !merchant.trim() ? error : null}>
+            <TextInput
               value={merchant}
               onChange={(e) => setMerchant(e.target.value)}
               required
-              className="mt-1 w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[var(--fg)]"
             />
-          </label>
-          <label className="block text-sm text-[var(--fg-muted)]">
-            Category
-            <select
+          </Field>
+          <Field label="Category">
+            <SelectInput
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="mt-1 w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2"
             >
               {CATEGORIES.map((c) => (
                 <option key={c}>{c}</option>
               ))}
-            </select>
-          </label>
-          <label className="block text-sm text-[var(--fg-muted)]">
-            Date
-            <input
+            </SelectInput>
+          </Field>
+          <Field label="Date">
+            <TextInput
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="mt-1 w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2"
             />
-          </label>
-          <label className="sm:col-span-2 block text-sm text-[var(--fg-muted)]">
-            Receipt filename
-            <input
-              value={receiptName}
-              onChange={(e) => setReceiptName(e.target.value)}
-              placeholder="uber-oct.pdf"
-              className="mt-1 w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[var(--fg)]"
-            />
-          </label>
+          </Field>
           <div className="sm:col-span-2">
-            <Button type="submit" size="sm">
-              Submit
+            <Field label="Receipt filename">
+              <TextInput
+                value={receiptName}
+                onChange={(e) => setReceiptName(e.target.value)}
+                placeholder="uber-oct.pdf"
+              />
+            </Field>
+          </div>
+          {error && amount && merchant.trim() ? (
+            <p className="sm:col-span-2 text-sm text-[var(--danger)]" role="alert">
+              {error}
+            </p>
+          ) : null}
+          <div className="sm:col-span-2 flex flex-wrap gap-2">
+            <Button type="submit">Submit</Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setAmount("");
+                setMerchant("");
+                setReceiptName("");
+                setError(null);
+                setMsg(null);
+              }}
+            >
+              Clear
             </Button>
           </div>
         </form>
@@ -172,18 +189,18 @@ export function ExpensesView() {
         )}
       </section>
 
-      {isManager ? (
+      {isManager || isFinance || queue.length > 0 ? (
         <section>
           <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--fg-muted)]">
-            Pending approval
+            Pending approval (your step)
           </h2>
-          {pending.length === 0 ? (
+          {queue.length === 0 ? (
             <p className="mt-2 text-sm text-[var(--fg-muted)]">
-              Nothing waiting.
+              Nothing waiting on this role.
             </p>
           ) : (
             <ul className="mt-3 space-y-2">
-              {pending.map((e) => (
+              {queue.map((e) => (
                 <li
                   key={e.id}
                   className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm"
@@ -194,14 +211,18 @@ export function ExpensesView() {
                       {moneyUsd(e.amount)}
                     </p>
                     <p className="text-xs text-[var(--fg-muted)]">
-                      {e.merchant} · {e.category}
+                      {e.merchant} · {e.category} · waiting{" "}
+                      {workflowStep(
+                        workflowById(state.workflows, "expense"),
+                        e.stepIndex ?? 0,
+                      )?.label}
                     </p>
                   </div>
                   <div className="flex gap-2">
                     <Button
                       type="button"
                       size="sm"
-                      onClick={() => decideExpense(e.id, "Approved")}
+                      onClick={() => decideExpense(e.id, "Approved", role)}
                     >
                       Approve
                     </Button>
@@ -209,7 +230,7 @@ export function ExpensesView() {
                       type="button"
                       size="sm"
                       variant="secondary"
-                      onClick={() => decideExpense(e.id, "Denied")}
+                      onClick={() => decideExpense(e.id, "Denied", role)}
                     >
                       Deny
                     </Button>

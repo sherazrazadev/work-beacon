@@ -65,6 +65,24 @@ export function OffboardingView() {
             <p className="text-xs text-[var(--fg-muted)]">
               Initiated by {getWorker(plan.initiatedBy)?.name}
             </p>
+            {(() => {
+              const held = state.assets.filter(
+                (a) => a.workerId === plan.workerId && a.status === "Assigned",
+              );
+              const openAcc = state.accessRequests.filter(
+                (r) => r.workerId === plan.workerId && r.status === "Open",
+              );
+              if (held.length === 0 && openAcc.length === 0) return null;
+              return (
+                <p className="mt-2 text-sm text-[var(--fg-muted)]">
+                  Recall:{" "}
+                  {held.map((a) => `${a.kind} ${a.tag}`).join(", ") || "no assets"}
+                  {openAcc.length
+                    ? ` · ${openAcc.length} open access request${openAcc.length === 1 ? "" : "s"}`
+                    : ""}
+                </p>
+              );
+            })()}
             <ul className="mt-3 space-y-2">
               {plan.tasks.map((t) => (
                 <li key={t.id} className="flex items-center gap-2 text-sm">

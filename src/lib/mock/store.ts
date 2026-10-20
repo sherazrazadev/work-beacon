@@ -7,6 +7,7 @@ import {
   SEED_PROFILE,
   SEED_TIME_OFF,
   TimeOffRequest,
+  PayStub,
 } from "@/lib/mock/data";
 import {
   InboxTask,
@@ -64,6 +65,60 @@ import {
   SEED_PULSE_PLANS,
   SEED_PULSE_RESPONSES,
 } from "@/lib/mock/pulse";
+import {
+  DEMO_API_KEY_DEFAULT,
+  DEFAULT_HOME_PINS,
+  HomeWidgetId,
+  ProcessEvent,
+  SEED_PROCESS_EVENTS,
+  SEED_WORKFLOWS,
+  WorkflowDef,
+} from "@/lib/mock/platform";
+import {
+  BenefitElection,
+  CompWorksheet,
+  ContingentWorker,
+  Delegation,
+  HrCase,
+  InternalApplication,
+  SEED_CASES,
+  SEED_COMP,
+  SEED_CONTINGENT,
+  SEED_DELEGATIONS,
+  SEED_ELECTIONS,
+  SEED_INTERNAL_APPS,
+} from "@/lib/mock/people-ops";
+import {
+  AccessRequest,
+  Eligibility,
+  ItAsset,
+  OrgMove,
+  Position,
+  SEED_ACCESS,
+  SEED_ASSETS,
+  SEED_ELIGIBILITY,
+  SEED_MOVES,
+  SEED_POSITIONS,
+} from "@/lib/mock/org-ops";
+import {
+  Garnishment,
+  OffCyclePay,
+  PayRun,
+  RetroAdjustment,
+  SEED_EXTRA_STUBS,
+  SEED_GARNISHMENTS,
+  SEED_OFF_CYCLE,
+  SEED_PAYROLL_RUNS,
+  SEED_RETRO,
+} from "@/lib/mock/payroll";
+import type { InsightBoard } from "@/lib/mock/insights";
+import {
+  LearnAssignment,
+  LearnCertificate,
+  SEED_LEARN_ASSIGNMENTS,
+  SEED_LEARN_CERTS,
+} from "@/lib/mock/learn";
+import type { DemoRole } from "@/lib/mock/org";
 
 const KEY = "work-beacon-mock-store";
 
@@ -104,6 +159,32 @@ export type MockStoreState = {
   pulseResponses: PulseResponse[];
   pulsePlans: PulseActionPlan[];
   agentAudit: AgentAuditEntry[];
+  workflows: WorkflowDef[];
+  processEvents: ProcessEvent[];
+  connectedIntegrations: string[];
+  installedApps: string[];
+  homePins: Partial<Record<DemoRole, HomeWidgetId[]>>;
+  demoApiKey: string;
+  retentionDays: number;
+  hrCases: HrCase[];
+  delegations: Delegation[];
+  compWorksheets: CompWorksheet[];
+  internalApps: InternalApplication[];
+  elections: BenefitElection[];
+  contingent: ContingentWorker[];
+  positions: Position[];
+  orgMoves: OrgMove[];
+  assets: ItAsset[];
+  accessRequests: AccessRequest[];
+  eligibility: Eligibility[];
+  payrollRuns: PayRun[];
+  garnishments: Garnishment[];
+  offCyclePays: OffCyclePay[];
+  retroAdjustments: RetroAdjustment[];
+  extraPayStubs: PayStub[];
+  insightView: InsightBoard | null;
+  learnAssignments: LearnAssignment[];
+  learnCertificates: LearnCertificate[];
 };
 
 export function defaultMockStore(): MockStoreState {
@@ -160,17 +241,79 @@ export function defaultMockStore(): MockStoreState {
     })),
     pulsePlans: SEED_PULSE_PLANS.map((p) => ({ ...p })),
     agentAudit: SEED_AGENT_AUDIT.map((a) => ({ ...a })),
+    workflows: SEED_WORKFLOWS.map((w) => ({
+      ...w,
+      steps: w.steps.map((s) => ({ ...s })),
+    })),
+    processEvents: SEED_PROCESS_EVENTS.map((e) => ({ ...e })),
+    connectedIntegrations: [],
+    installedApps: [],
+    homePins: {
+      employee: [...DEFAULT_HOME_PINS.employee],
+      manager: [...DEFAULT_HOME_PINS.manager],
+      hr_admin: [...DEFAULT_HOME_PINS.hr_admin],
+      finance: [...DEFAULT_HOME_PINS.finance],
+    },
+    demoApiKey: DEMO_API_KEY_DEFAULT,
+    retentionDays: 2555,
+    hrCases: SEED_CASES.map((c) => ({ ...c })),
+    delegations: SEED_DELEGATIONS.map((d) => ({ ...d })),
+    compWorksheets: SEED_COMP.map((w) => ({ ...w })),
+    internalApps: SEED_INTERNAL_APPS.map((a) => ({ ...a })),
+    elections: SEED_ELECTIONS.map((e) => ({ ...e })),
+    contingent: SEED_CONTINGENT.map((c) => ({ ...c })),
+    positions: SEED_POSITIONS.map((p) => ({ ...p })),
+    orgMoves: SEED_MOVES.map((m) => ({ ...m })),
+    assets: SEED_ASSETS.map((a) => ({ ...a })),
+    accessRequests: SEED_ACCESS.map((a) => ({ ...a })),
+    eligibility: SEED_ELIGIBILITY.map((e) => ({ ...e, docs: [...e.docs] })),
+    payrollRuns: SEED_PAYROLL_RUNS.map((r) => ({
+      ...r,
+      results: r.results.map((x) => ({ ...x })),
+    })),
+    garnishments: SEED_GARNISHMENTS.map((g) => ({ ...g })),
+    offCyclePays: SEED_OFF_CYCLE.map((o) => ({ ...o })),
+    retroAdjustments: SEED_RETRO.map((r) => ({ ...r })),
+    extraPayStubs: SEED_EXTRA_STUBS.map((s) => ({
+      ...s,
+      earnings: s.earnings.map((l) => ({ ...l })),
+      taxLines: s.taxLines.map((l) => ({ ...l })),
+      deductionLines: s.deductionLines.map((l) => ({ ...l })),
+    })),
+    insightView: null,
+    learnAssignments: SEED_LEARN_ASSIGNMENTS.map((a) => ({ ...a })),
+    learnCertificates: SEED_LEARN_CERTS.map((c) => ({ ...c })),
   };
 }
 
-export function readMockStore(): MockStoreState {
-  if (typeof window === "undefined") return defaultMockStore();
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return defaultMockStore();
-    const parsed = JSON.parse(raw) as Partial<MockStoreState>;
-    const base = defaultMockStore();
+export function hydrateMockStore(parsed: Partial<MockStoreState>): MockStoreState {
+  const base = defaultMockStore();
+  if (
+    parsed.timeOff &&
+    parsed.hrCases &&
+    parsed.positions &&
+    parsed.orgMoves &&
+    parsed.assets &&
+    parsed.accessRequests &&
+    parsed.eligibility
+  ) {
     return {
+      ...(parsed as MockStoreState),
+      payrollRuns: parsed.payrollRuns ?? base.payrollRuns,
+      garnishments: parsed.garnishments ?? base.garnishments,
+      offCyclePays: parsed.offCyclePays ?? base.offCyclePays,
+      retroAdjustments: parsed.retroAdjustments ?? base.retroAdjustments,
+      extraPayStubs: (parsed.extraPayStubs ?? base.extraPayStubs).map((s) => {
+        if (s.workerId) return s;
+        const m = s.id.match(/-(w-[a-z]+)$/);
+        return m ? { ...s, workerId: m[1] } : s;
+      }),
+      insightView: parsed.insightView ?? base.insightView,
+      learnAssignments: parsed.learnAssignments ?? base.learnAssignments,
+      learnCertificates: parsed.learnCertificates ?? base.learnCertificates,
+    };
+  }
+  return {
       timeOff: parsed.timeOff ?? base.timeOff,
       profile: { ...base.profile, ...parsed.profile },
       notifications: parsed.notifications ?? base.notifications,
@@ -200,7 +343,46 @@ export function readMockStore(): MockStoreState {
       pulseResponses: parsed.pulseResponses ?? base.pulseResponses,
       pulsePlans: parsed.pulsePlans ?? base.pulsePlans,
       agentAudit: parsed.agentAudit ?? base.agentAudit,
+      workflows: parsed.workflows ?? base.workflows,
+      processEvents: parsed.processEvents ?? base.processEvents,
+      connectedIntegrations:
+        parsed.connectedIntegrations ?? base.connectedIntegrations,
+      installedApps: parsed.installedApps ?? base.installedApps,
+      homePins: { ...base.homePins, ...parsed.homePins },
+      demoApiKey: parsed.demoApiKey ?? base.demoApiKey,
+      retentionDays: parsed.retentionDays ?? base.retentionDays,
+      hrCases: parsed.hrCases ?? base.hrCases,
+      delegations: parsed.delegations ?? base.delegations,
+      compWorksheets: parsed.compWorksheets ?? base.compWorksheets,
+      internalApps: parsed.internalApps ?? base.internalApps,
+      elections: parsed.elections ?? base.elections,
+      contingent: parsed.contingent ?? base.contingent,
+      positions: parsed.positions ?? base.positions,
+      orgMoves: parsed.orgMoves ?? base.orgMoves,
+      assets: parsed.assets ?? base.assets,
+      accessRequests: parsed.accessRequests ?? base.accessRequests,
+      eligibility: parsed.eligibility ?? base.eligibility,
+      payrollRuns: parsed.payrollRuns ?? base.payrollRuns,
+      garnishments: parsed.garnishments ?? base.garnishments,
+      offCyclePays: parsed.offCyclePays ?? base.offCyclePays,
+      retroAdjustments: parsed.retroAdjustments ?? base.retroAdjustments,
+      extraPayStubs: (parsed.extraPayStubs ?? base.extraPayStubs).map((s) => {
+        if (s.workerId) return s;
+        const m = s.id.match(/-(w-[a-z]+)$/);
+        return m ? { ...s, workerId: m[1] } : s;
+      }),
+      insightView: parsed.insightView ?? base.insightView,
+      learnAssignments: parsed.learnAssignments ?? base.learnAssignments,
+      learnCertificates: parsed.learnCertificates ?? base.learnCertificates,
     };
+}
+
+export function readMockStore(): MockStoreState {
+  if (typeof window === "undefined") return defaultMockStore();
+  try {
+    const raw = window.localStorage.getItem(KEY);
+    if (!raw) return defaultMockStore();
+    return hydrateMockStore(JSON.parse(raw) as Partial<MockStoreState>);
   } catch {
     return defaultMockStore();
   }

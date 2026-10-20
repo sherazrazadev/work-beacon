@@ -130,12 +130,12 @@ export function RecruitingView() {
         ))}
       </ul>
 
-      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-        <div className="flex min-w-[720px] gap-3">
+      <div className="md:overflow-x-auto">
+        <div className="flex flex-col gap-3 md:min-w-[720px] md:flex-row">
           {CANDIDATE_STAGES.map((stage) => (
             <section
               key={stage}
-              className="w-56 shrink-0 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3"
+              className="w-full rounded-xl md:w-56 md:shrink-0  border border-[var(--border)] bg-[var(--surface)] p-3"
             >
               <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--fg-muted)]">
                 {stage}
@@ -152,7 +152,7 @@ export function RecruitingView() {
                       >
                         <Link
                           href={`/dashboard/recruiting/${c.id}`}
-                          className="font-medium text-[var(--fg)] hover:text-[var(--accent)]"
+                          className="inline-flex min-h-10 items-center font-medium text-[var(--fg)] hover:text-[var(--accent)] md:min-h-0"
                         >
                           {c.name}
                         </Link>
@@ -169,7 +169,7 @@ export function RecruitingView() {
                                 e.target.value as CandidateStage,
                               )
                             }
-                            className="mt-1 w-full rounded border border-[var(--border)] bg-[var(--surface)] px-1 py-1"
+                            className="mt-1 w-full rounded border border-[var(--border)] bg-[var(--surface)] px-1 py-1 min-h-10 sm:min-h-8"
                           >
                             {CANDIDATE_STAGES.map((s) => (
                               <option key={s} value={s}>

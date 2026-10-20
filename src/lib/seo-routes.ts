@@ -1,3 +1,4 @@
+import { BLOG_POSTS } from "@/lib/blog";
 import {
   AGENT_CATEGORIES,
   CUSTOMERS,
@@ -17,6 +18,7 @@ export function marketingPaths(): string[] {
     "/customers",
     "/industries",
     "/resources",
+    "/blog",
     "/pricing",
     "/about",
     "/company",
@@ -43,6 +45,7 @@ export function marketingPaths(): string[] {
     ...INDUSTRIES.map((i) => `/industries/${i.slug}`),
     ...RESOURCE_SECTIONS.map((r) => `/resources/${r.slug}`),
     ...RESOURCE_ARTICLES.map((a) => `/resources/guides/${a.slug}`),
+    ...BLOG_POSTS.map((p) => `/blog/${p.slug}`),
   ];
 }
 

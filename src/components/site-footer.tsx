@@ -32,6 +32,7 @@ const COLUMNS = [
   {
     title: "Resources",
     links: [
+      { href: "/blog", label: "Blog" },
       { href: "/customers", label: "Customer Stories" },
       { href: "/resources/demos", label: "Demos" },
       { href: "/resources/events", label: "Events" },

@@ -10,7 +10,7 @@ export function AskChips() {
   const [seed, setSeed] = useState("");
 
   return (
-    <section className="border-y border-[var(--border)] bg-[var(--surface)]/70 py-10">
+    <section className="border-y border-[var(--border)] bg-[var(--surface)] py-10">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <p className="font-[family-name:var(--font-display)] text-sm font-semibold text-[var(--fg)]">
           Ask us anything
@@ -21,7 +21,7 @@ export function AskChips() {
             setSeed("");
             setOpen(true);
           }}
-          className="mt-3 flex w-full max-w-xl items-center rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-left text-[var(--fg-muted)] hover:border-[var(--accent)]"
+          className="mt-3 flex min-h-12 w-full max-w-xl items-center rounded-md border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-left text-[var(--fg-muted)] transition-colors duration-150 ease-out hover:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
         >
           Search products, agents, industries…
           <span className="ml-auto hidden text-xs sm:inline">⌘K</span>

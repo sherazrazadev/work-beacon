@@ -2,6 +2,7 @@
 
 import { DashboardSkeleton } from "@/components/dashboard/skeleton";
 import { useMock } from "@/components/dashboard/mock-provider";
+import { StackTable } from "@/components/ui/stack-table";
 import {
   SEED_PLANNING,
   moneyUsd,
@@ -57,7 +58,7 @@ export function PlanningView() {
         ))}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+      <StackTable className="sm:rounded-xl sm:border sm:border-[var(--border)] sm:bg-[var(--surface)]">
         <table className="min-w-full text-sm">
           <thead>
             <tr className="text-left text-[var(--fg-muted)]">
@@ -85,7 +86,7 @@ export function PlanningView() {
             })}
           </tbody>
         </table>
-      </div>
+      </StackTable>
     </div>
   );
 }
