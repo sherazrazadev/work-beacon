@@ -11,6 +11,24 @@ export type BlogPost = {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "why-legacy-erps-fail-midsize-companies",
+    title: "Why legacy ERPs fail growing midsize companies",
+    summary:
+      "Monolithic enterprise suites demand multi-year deployments and armies of consultants. Midsize teams need a unified record that delivers value in weeks, not years.",
+    date: "2026-10-23",
+    minutes: 6,
+    topic: "HR",
+    author: "Avery Chen",
+    body: [
+      "Growing companies with 200 to 2,000 employees frequently hit a painful inflection point. Basic small-business payroll tools no longer handle multi-state compliance, complex cost centers, or structured review cycles. In response, leadership often looks upward toward the multi-million dollar monolithic ERPs built for Fortune 500 conglomerates. That decision almost always triggers eighteen months of implementation delays, budget overruns, and administrative frustration.",
+      "Monolithic enterprise systems were designed around a different business era. They assume an organization has dedicated teams of certified system administrators, external systems integrators billing hundreds of dollars an hour, and employees who tolerate clunky, multi-step portals just to view a paystub or log time off. When midsize teams attempt to deploy these behemoths, they end up paying enterprise licensing fees while using less than twenty percent of the underlying functionality.",
+      "The core issue is architectural rigidity. In a traditional legacy suite, making a routine change—such as updating an approval chain, modeling a new compensation tier, or modifying a leave policy—requires weeks of specialized configuration. Meanwhile, department heads resort to shadow spreadsheets to get actual work done, immediately breaking the promise of a single source of truth.",
+      "Mid-market organizations do not need bloated monoliths; they need a single, honest record connecting people, money, and operations. When employee identity, compensation, leave balances, and general ledger accounts share one unified graph, routine operational tasks become self-service. Onboarding flows directly into asset provisioning. Timesheets feed pay statements without manual CSV reconciliations. Real-time headcount variance replaces outdated quarterly board decks.",
+      "Modern workplace agents further widen this efficiency gap. In an architecture built with human-in-the-loop guardrails, an assistant can draft an expense categorization, summarize team leave, or guide a manager through a promotion packet in seconds. Because the agent reads directly from a unified record and operates on a propose-then-approve model, compliance and audit trails remain airtight.",
+      "Before committing to a seven-figure legacy ERP contract, ask a simple question: will this system make everyday work simpler for your people on day thirty, or will it create a new administrative department just to keep the software running? For midsize companies, speed, clarity, and trust in the primary record always beat monolithic complexity.",
+    ],
+  },
+  {
     slug: "one-record-people-and-money",
     title: "People and money belong on one record",
     summary:
