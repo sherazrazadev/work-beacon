@@ -180,8 +180,7 @@ export function HomeWidgets() {
             Welcome, {session?.user.name ?? "there"}
           </h1>
           <p className="mt-1 text-sm text-[var(--fg-muted)]">
-            Northstar Labs · {role.replace("_", " ")} home.
-            {session?.ssoDemo ? " · Signed in via SSO theater." : ""}
+            {session?.user.tenantName || "Your workspace"} · {role.replace("_", " ")} home.
           </p>
         </div>
         <Button

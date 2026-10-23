@@ -39,6 +39,7 @@ yarn-error.log*
 graphify-out/
 .cursor/
 .vscode/
+.agents
 
 # vercel
 .vercel

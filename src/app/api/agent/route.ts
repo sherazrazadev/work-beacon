@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { AGENT_TOOL_IDS } from "@/lib/agent/tools";
+import { createSupabaseServer } from "@/lib/supabase/server";
 
 type Body = {
   prompt?: string;
@@ -11,6 +12,13 @@ type Body = {
  * OPENAI_API_KEY is set. Tools still run locally in the browser.
  */
 export async function POST(req: Request) {
+  // Signed-in users only: this endpoint can spend LLM budget.
+  const supabase = await createSupabaseServer();
+  const { data: auth } = await supabase.auth.getClaims();
+  if (!auth?.claims) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
   const llmOn = process.env.NEXT_PUBLIC_AGENT_LLM === "1";
   if (!llmOn) {
     return NextResponse.json({ mode: "rules", reason: "flag_off" });
@@ -28,7 +36,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ mode: "rules", reason: "bad_json" });
   }
 
-  const prompt = (body.prompt ?? "").trim();
+  const prompt = (body.prompt ?? "").trim().slice(0, 500);
   const toolIds = (body.toolIds ?? AGENT_TOOL_IDS).filter(Boolean);
   if (!prompt) {
     return NextResponse.json({ mode: "rules", reason: "empty_prompt" });

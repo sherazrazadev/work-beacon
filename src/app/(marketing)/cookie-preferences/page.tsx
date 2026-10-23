@@ -8,8 +8,8 @@ export default function CookiePreferencesPage() {
   return (
     <LegalPage title="Cookie Preferences">
       <p>
-        {BRAND.name} uses essential cookies / localStorage for demo session and
-        consent. Analytics remain off unless you choose Accept on the banner.
+        {BRAND.name} uses essential cookies to keep you signed in, and
+        localStorage to remember your cookie choice. Analytics remain off unless you choose Accept on the banner.
       </p>
       <p>
         To reset: clear this site&apos;s data in your browser, or remove the{" "}

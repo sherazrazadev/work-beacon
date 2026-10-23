@@ -71,8 +71,8 @@ export function PayView() {
           Pay
         </h1>
         <p className="mt-1 text-sm text-[var(--fg-muted)]">
-          Statements, deposit, tax forms, and total rewards — demo data stays
-          in this browser.
+          Statements, deposit, tax forms, and total rewards — saved to
+          your workspace.
         </p>
       </div>
 

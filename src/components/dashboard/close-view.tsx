@@ -20,8 +20,8 @@ export function CloseView() {
           Month-end close
         </h1>
         <p className="mt-1 text-sm text-[var(--fg-muted)]">
-          Period {CLOSE_PERIOD} · {done}/{tasks.length} complete. Toggles persist
-          in this browser.
+          Period {CLOSE_PERIOD} · {done}/{tasks.length} complete. Toggles are saved
+          to your workspace.
         </p>
       </div>
 

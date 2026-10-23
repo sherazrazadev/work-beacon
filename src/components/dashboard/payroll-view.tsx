@@ -44,7 +44,7 @@ export function PayrollView() {
         </p>
       ) : null}
       {runs.length === 0 ? (
-        <EmptyState title="No runs" body="Reset the mock store from Admin." />
+        <EmptyState title="No runs" body="Ask an admin to reset the demo data from Admin." />
       ) : (
         runs.map((run) => {
           const group = PAY_GROUPS.find((g) => g.id === run.groupId);

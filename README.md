@@ -15,10 +15,14 @@ Inspired by public enterprise marketing structure. Own UI, copy, and code — no
 
 ## Run
 
+Requires Node 22+ and Docker (the backend runs locally via the Supabase CLI).
+
 ```bash
 cd workdayforge
-cp .env.example .env.local   # optional
 npm install
+cp .env.example .env.local   # then fill the Supabase values printed by `npm run db:start`
+npm run db:start             # local Supabase (Postgres + Auth + API) in Docker
+npm run db:reset             # apply migrations and seed the demo tenant
 npm run dev
 ```
 
@@ -29,7 +33,11 @@ npm run build
 npm start
 ```
 
-Demo login: **Enter demo account** on `/login` (`demo@workbeacon.app` / `demo`).
+Demo login: **Enter demo workspace** on `/login` (`demo@workbeacon.app` / `Beacon-Demo-2026`). The header persona switcher signs in as the manager, HR admin, finance and new-hire demo users.
+
+Checks: `npm run test:unit` · `npm run db:test` (pgTAP/RLS) · `npm run test:integration` (needs `db:start` + `db:seed`) · `npm run db:lint`.
+
+Publishing to real users: `docs/PUBLISH-CHECKLIST.md` (hosted Supabase URL/keys, SMTP, hosting, launch gate).
 
 ## Polish notes (EPIC-05)
 
@@ -71,4 +79,5 @@ bash scripts/brand-leak-scan.sh
 - **Phase 5:** EPIC-16 enterprise UI/UX (`docs/DESIGN.md`)  
 - **Phase 6:** EPIC-17 Beacon Insights (`/dashboard/insights`)  
 - **Phase 7:** EPIC-18 Learning ops (`/dashboard/learning`)  
+- **Phase 8 (in progress):** EPIC-19–23 Supabase backend. Running on local Supabase: real sign-in, database-enforced permissions (RLS), persisted data, demo tenant. Not yet on a hosted project; not ready for real employee data until the launch gate passes (`docs/PUBLISH-CHECKLIST.md`, `docs/SUPABASE-PLAN.md`, `docs/adr/0001-supabase-backend.md`, `docs/adr/0002-governed-records-persistence.md`, status in `tickets.md`).  
 - Platform: workflows, reports, `/api/demo/*`, Apps catalog, `/developers` 

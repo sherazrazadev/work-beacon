@@ -11,15 +11,34 @@ export function RequestDemoForm() {
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [website, setWebsite] = useState(""); // honeypot
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!name.trim() || !email.includes("@") || !company.trim()) {
       setError("Name, work email, and company are required.");
       return;
     }
     setError(null);
-    setSent(true);
+    setBusy(true);
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, company, website, source: "request-demo" }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as { error?: string } | null;
+        setError(body?.error ?? "Could not send your request. Try again.");
+        return;
+      }
+      setSent(true);
+    } catch {
+      setError("Network error. Try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (sent) {
@@ -29,8 +48,8 @@ export function RequestDemoForm() {
           Request received
         </h1>
         <p className="mt-2 text-sm text-[var(--fg-muted)]">
-          Thanks{name ? `, ${name}` : ""}. This is a demo — no email was sent.
-          You can explore the employee experience now.
+          Thanks{name ? `, ${name}` : ""}. We have your details and will reply by email.
+          You can explore the demo workspace in the meantime.
         </p>
         <div className="mt-6 flex flex-col gap-2">
           <Button asChild>
@@ -50,9 +69,9 @@ export function RequestDemoForm() {
         Request a {BRAND.name} demo
       </h1>
       <p className="mt-2 text-sm text-[var(--fg-muted)]">
-        Tell us about your team. Submissions stay in this browser only.
+        Tell us about your team. We reply by email.
       </p>
-      <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
+      <form className="mt-6 space-y-4" onSubmit={(e) => void onSubmit(e)} noValidate>
         <label className="block text-sm text-[var(--fg-muted)]">
           Full name
           <input
@@ -81,13 +100,22 @@ export function RequestDemoForm() {
             required
           />
         </label>
+        <input
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+          className="absolute left-[-9999px] h-0 w-0 opacity-0"
+          name="website"
+        />
         {error ? (
           <p className="text-sm text-red-600" role="alert">
             {error}
           </p>
         ) : null}
-        <Button type="submit" className="w-full">
-          Submit request
+        <Button type="submit" className="w-full" disabled={busy}>
+          {busy ? "Sending…" : "Submit request"}
         </Button>
       </form>
       <p className="mt-4 text-center text-sm text-[var(--fg-muted)]">

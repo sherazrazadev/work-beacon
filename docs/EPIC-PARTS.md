@@ -44,4 +44,16 @@ Rule: finish **Part A** as a chunk, then **Part B one ticket at a time**, then n
 | --- | --- | --- |
 | **EPIC-18** Learning ops | ✅ T18-01 → T18-04 catalog, complete, certs, team | ✅ T18-05…T18-08 inbox, pin, agent → QA |
 
-**Done:** Phase 1 + Phase 2 + EPIC-13 + EPIC-14 + EPIC-15 + EPIC-16 + EPIC-17 + EPIC-18.
+## Phase 8 — Supabase backend (`SUPABASE-PLAN.md`)
+
+| Epic | Part A (chunk) | Part B (ticket-by-ticket) |
+| --- | --- | --- |
+| **EPIC-19** Foundation | ◐ T19-01 → T19-04 decisions (ADR done; D13/D14 open), projects, scaffolding, clients | ⬜ T19-05…T19-09 repository seam, conventions, types, CI → QA |
+| **EPIC-20** Auth + tenancy | ⬜ T20-01 → T20-04 schema, auth config, `proxy.ts`, route guard | ⬜ T20-05…T20-10 login, provider, invites, demo tenant, MFA → QA |
+| **EPIC-21** Authorization (RLS) | ⬜ T21-01 → T21-04 helpers, conventions, matrix, sensitive classes | ⬜ T21-05…T21-10 views, pgTAP, audit, CI, attacks → QA |
+| **EPIC-22** Domain migration | ⬜ T22-01 → T22-04 org, inbox/prefs, time/leave, talent | ⬜ T22-05…T22-12 money, payroll, people ops, org ops, platform, experience, retire store → QA |
+| **EPIC-23** Agent, API, ops | ⬜ T23-01 → T23-04 agent session, authed route, audit, API keys | ⬜ T23-05…T23-13 storage, realtime, demo ops, backups, deploy + launch gate, review, docs, privacy → QA |
+
+Order: 19 → 20 → 21 → 22 (waves A→F; each adds its own policies and tests) → 23.
+
+**Done:** Phase 1 + Phase 2 + EPIC-13 + EPIC-14 + EPIC-15 + EPIC-16 + EPIC-17 + EPIC-18. **Phase 8:** running on local Supabase (see `tickets.md` status notes); hosted rollout and launch gate pending (`docs/PUBLISH-CHECKLIST.md`).

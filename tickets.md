@@ -320,6 +320,100 @@ See `docs/PHASE-2-INDUSTRY.md`. Original Work Beacon features inspired by public
 
 ---
 
+# Phase 8 — Supabase backend
+
+Plan, decisions, and risks: `docs/SUPABASE-PLAN.md`. No custom backend service — Supabase (Postgres + Auth + RLS + Storage + Realtime) is the backend. Pending items are blank in the last column. ◐ = partly done (see the note under the table); ✅ only when verified.
+
+## EPIC-19 — Supabase foundation → `docs/epics/EPIC-19-supabase-foundation.md`
+
+| ID | Ticket | |
+| --- | --- | --- |
+| T19-01 | Confirm decisions (ADR) — D13 signup model + D14 hosting still open | ◐ |
+| T19-02 | Projects and environments | ◐ |
+| T19-03 | Repo scaffolding (`supabase/`, scripts) | ✅ |
+| T19-04 | Typed clients (`@supabase/ssr`) | ◐ |
+| T19-05 | Repository layer (migration seam; no mock mode ships) | ✅ |
+| T19-06 | Schema conventions | ◐ |
+| T19-07 | Typegen + drift check | ✅ |
+| T19-08 | CI (lint, types, build, DB lint/tests) | ◐ |
+| T19-09 | QA gate | ◐ |
+
+## EPIC-20 — Auth and tenancy → `docs/epics/EPIC-20-auth-tenancy.md`
+
+| ID | Ticket | |
+| --- | --- | --- |
+| T20-01 | Tenancy schema (tenants, profiles, memberships) | ◐ |
+| T20-02 | Auth configuration | ◐ |
+| T20-03 | `proxy.ts` session refresh | ✅ |
+| T20-04 | Server-side route guard | ✅ |
+| T20-05 | Login, signup, reset wired | ◐ |
+| T20-06 | `AuthProvider` rewrite | ✅ |
+| T20-07 | Invites (server-only service key) | |
+| T20-08 | Demo tenant + persona switcher | ✅ |
+| T20-09 | Privileged-role hardening (MFA) | |
+| T20-10 | QA gate | ◐ |
+
+## EPIC-21 — Authorization (RLS) → `docs/epics/EPIC-21-authorization-rls.md`
+
+| ID | Ticket | |
+| --- | --- | --- |
+| T21-01 | Helper functions (tenant, role, manager-of) | ✅ |
+| T21-02 | Policy conventions | ✅ |
+| T21-03 | Policy matrix | ◐ |
+| T21-04 | Sensitive data classes | ◐ |
+| T21-05 | Views and functions safety | ✅ |
+| T21-06 | pgTAP suite (grows each wave) | ✅ |
+| T21-07 | Audit log | ◐ |
+| T21-08 | CI gates (RLS on every table) | ✅ |
+| T21-09 | Attack checklist | ◐ |
+| T21-10 | QA gate | ◐ |
+
+## EPIC-22 — Domain migration → `docs/epics/EPIC-22-domain-migration.md`
+
+| ID | Ticket | |
+| --- | --- | --- |
+| T22-01 | Org core | ◐ |
+| T22-02 | Inbox, notifications, approvals, documents, prefs | ◐ |
+| T22-03 | Time and leave | ◐ |
+| T22-04 | Talent | ◐ |
+| T22-05 | Money | ◐ |
+| T22-06 | Payroll | ◐ |
+| T22-07 | People ops | ◐ |
+| T22-08 | Org ops | ◐ |
+| T22-09 | Platform | ◐ |
+| T22-10 | Experience and learning | ◐ |
+| T22-11 | Delete the local store (no mock mode ships) | ◐ |
+| T22-12 | QA gate | ◐ |
+
+## EPIC-23 — Server-side agent, API, ops → `docs/epics/EPIC-23-agent-api-ops.md`
+
+| ID | Ticket | |
+| --- | --- | --- |
+| T23-01 | Agent tools under the user's session | ◐ |
+| T23-02 | Authenticated `/api/agent` | ✅ |
+| T23-03 | Agent audit on the server | ◐ |
+| T23-04 | Real demo API keys | |
+| T23-05 | Storage (vault) | |
+| T23-06 | Realtime inbox | |
+| T23-07 | Demo tenant operations | ✅ |
+| T23-08 | Observability and backups | |
+| T23-09 | Deploy pipeline + launch gate (Pro, backups tested) | |
+| T23-10 | Security and performance review | |
+| T23-11 | Docs | ◐ |
+| T23-12 | QA gate + Phase 8 closeout | |
+| T23-13 | Privacy, retention, data lifecycle | |
+
+**Status notes (2026-10-20, local Supabase; nothing deployed to a hosted project yet)**
+
+- ✅ means built and verified locally: `npm run test:unit` (5), `supabase test db` (22 pgTAP), `npm run test:integration` (4, real database), build, brand scan, and a browser sweep of every sidebar route for all five demo personas.
+- ◐ T19-02 local only; hosted staging/production not created. ◐ T19-04 clients exist (browser, server, admin) but are not typed with the generated `Database` generics. ◐ T19-06 conventions applied in migrations; D5 uuid keys only for tenancy tables. ◐ T19-08 `.github/workflows/ci.yml` written but not yet run on GitHub; ESLint is not a CI step because 15 pre-existing `set-state-in-effect` errors remain. ◐ T19-09 / T20-10 / T21-10 / T22-12 wait for owner QA.
+- ◐ T20-01 profile carries one tenant and role (no `memberships` table). ◐ T20-02 local config only (signup off, min password 10, TOTP enabled); hosted settings are in `docs/PUBLISH-CHECKLIST.md`. ◐ T20-05 sign-in and reset are wired; signup is invite-only and `/signup` stores a lead. Not built: T20-07 invites, T20-09 MFA enrolment UI.
+- ◐ T21-03 matrix is collection-level with own/team/all scopes; per-state-transition rules are not enforced by the database. ◐ T21-04 bank data is last-4 only but money sits in jsonb. ◐ T21-07 every record write is audited; no viewer yet. ◐ T21-09 attack checklist partly covered by pgTAP.
+- ◐ T22-01…T22-11 all collections persist through governed `records` (ADR 0002), not typed tables. Directory is still static. Kudos and Shift swap still use localStorage, so T22-11 is not finished.
+- ◐ T23-01 the agent reads and writes only what the signed-in user's session allows; it is still client-side. ◐ T23-03 agent log is stored through the same permission-checked path, not written by a server. ✅ T23-02 `/api/agent` requires sign-in. ✅ T23-07 `npm run db:seed` and `/api/demo/reset`. Not built: T23-04 API keys, T23-05 Storage, T23-06 Realtime, T23-08 backups, T23-09 deploy, T23-10 review, T23-13 retention.
+
+---
+
 ## Acceptance Criteria (every ticket)
 
 - Renders on mobile + desktop  
@@ -343,3 +437,18 @@ See `docs/PHASE-2-INDUSTRY.md`. Original Work Beacon features inspired by public
 - EPIC-13 gates passed (cases, enrollment, merit, internal jobs)  
 - EPIC-14 gates passed (moves, assets, access, eligibility)  
 - EPIC-15 gates passed (pay run, stubs, garnishments)  
+
+### Phase 5–7
+- EPIC-16 gate passed (enterprise UI/UX; responsive pass at 390 / 768 / 320 in `docs/evidence/EPIC-16-qa.md`)  
+- EPIC-17 gate passed (role-default insights board, CSV, 3 insight tools)  
+- EPIC-18 gate passed (employee completes a course and gets a certificate; manager assigns and sees overdue)  
+
+### Phase 8
+- EPIC-19 → EPIC-23 gates passed (`docs/ROADMAP.md`, `docs/SUPABASE-PLAN.md` §7)  
+- Every `public` table has RLS enabled; pgTAP proves cross-worker and cross-tenant isolation  
+- Editing browser storage grants no access; permissions are enforced by the database  
+- No mock mode ships; local store deleted (T22-11)  
+- Launch gate met (`docs/SUPABASE-PLAN.md` §9): Pro, tested restore, custom SMTP, privacy pages updated  
+- Agent and public API cannot exceed the caller's permissions  
+- CI green: lint, types, build, brand scan, DB lint, DB tests  
+- No Supabase service key in the client bundle  

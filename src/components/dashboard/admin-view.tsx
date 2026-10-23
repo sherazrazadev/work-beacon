@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/components/auth/auth-provider";
 import { useMock } from "@/components/dashboard/mock-provider";
 import { StackTable } from "@/components/ui/stack-table";
 import { Button } from "@/components/ui/button";
@@ -11,14 +12,18 @@ import { TENANT, COST_CENTERS, DEPARTMENTS, LOCATIONS, WORKERS } from "@/lib/moc
 export function AdminView() {
   const { ready, state, setFeatureFlags, resetStore, clearAgentAudit } =
     useMock();
+  const { session } = useAuth();
   const [msg, setMsg] = useState<string | null>(null);
+  const [resetting, setResetting] = useState(false);
 
   if (!ready) return <DashboardSkeleton />;
 
-  function onReset() {
-    resetStore();
-    setMsg("Mock store reset to seed.");
-    window.setTimeout(() => setMsg(null), 2500);
+  async function onReset() {
+    setResetting(true);
+    const err = await resetStore();
+    setResetting(false);
+    setMsg(err ?? "Demo workspace reset to its starting data.");
+    window.setTimeout(() => setMsg(null), 4000);
   }
 
   return (
@@ -28,7 +33,7 @@ export function AdminView() {
           Admin console
         </h1>
         <p className="mt-1 text-sm text-[var(--fg-muted)]">
-          Tenant settings for {TENANT.name} (demo).
+          Tenant settings for {session?.user.tenantName || TENANT.name}.
         </p>
       </div>
 
@@ -171,16 +176,24 @@ export function AdminView() {
         )}
       </section>
 
-      <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-        <h2 className="font-semibold">Seed reset</h2>
-        <p className="mt-2 text-sm text-[var(--fg-muted)]">
-          Clears localStorage mock store (inbox, profile edits, approvals) back
-          to defaults.
-        </p>
-        <Button type="button" variant="secondary" className="mt-4" onClick={onReset}>
-          Reset mock store
-        </Button>
-      </section>
+      {session?.user.demo ? (
+        <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
+          <h2 className="font-semibold">Reset demo data</h2>
+          <p className="mt-2 text-sm text-[var(--fg-muted)]">
+            Restores the demo workspace to its starting data for everyone using the
+            shared demo account. Not available in real workspaces.
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            className="mt-4"
+            disabled={resetting}
+            onClick={() => void onReset()}
+          >
+            {resetting ? "Resetting…" : "Reset demo data"}
+          </Button>
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -76,3 +76,11 @@ REA / Cursor browser for structure; write new UI under Work Beacon.
 
 - Assigned courses, completions, certificates, manager overdue  
 - Plan: `docs/epics/EPIC-18-learning-ops.md`
+
+## Phase 8 (Supabase backend)
+
+- Real auth, tenancy, Postgres data, and Row Level Security on **Supabase** — no custom backend service  
+- **No mock mode ships.** Browser-only data is migration scaffolding and is deleted at T22-11  
+- Supabase **Free** for dev/staging; **Pro required before any real user** (launch gate in the plan, §9)  
+- Supersedes the "fake login only" line in *Confirmed (EPIC-00)* once EPIC-20 passes  
+- Plan: `docs/SUPABASE-PLAN.md` · ADR: `docs/adr/0001-supabase-backend.md` · Epics **19–23**

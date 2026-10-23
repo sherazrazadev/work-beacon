@@ -1,0 +1,1 @@
+-- Demo data is seeded by `npm run db:seed` (needs the Auth admin API), not here.

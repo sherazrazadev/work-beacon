@@ -28,7 +28,7 @@ export function AgentOnboarding() {
         </h2>
         <p className="mt-3 text-sm text-[var(--fg-muted)]">
           Ask about PTO, pay stubs, time off, or upcoming deadlines. It reads
-          your demo dashboard data in this browser — no live model calls.
+          your dashboard data that you are allowed to see — it runs rules in your browser, no live model calls by default.
           Press ⌘K / Ctrl+K anytime.
         </p>
         <div className="mt-6 flex flex-wrap gap-2">

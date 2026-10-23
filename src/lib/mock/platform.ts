@@ -171,7 +171,7 @@ export const INSTALLABLE_APPS: InstallableApp[] = [
     name: "Kudos Wall",
     navLabel: "Kudos",
     href: "/dashboard/apps/kudos",
-    blurb: "Public thanks that stay in this browser.",
+    blurb: "Public thanks for teammates.",
   },
 ];
 

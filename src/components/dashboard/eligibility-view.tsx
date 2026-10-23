@@ -42,7 +42,7 @@ export function EligibilityView() {
       status: list.length ? "Complete" : "Missing",
       docs: list,
     });
-    setMsg("Recorded in this browser.");
+    setMsg("Saved.");
   }
 
   return (

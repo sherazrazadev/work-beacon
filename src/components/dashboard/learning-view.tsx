@@ -37,7 +37,7 @@ export function LearningView() {
             Learning
           </h1>
           <p className="mt-1 text-sm text-[var(--fg-muted)]">
-            Assigned courses persist in this browser. Completing Security
+            Assigned courses are saved to your workspace. Completing Security
             awareness 2026 closes the matching inbox todo.
           </p>
         </div>

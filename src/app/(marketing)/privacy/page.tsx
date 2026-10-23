@@ -8,16 +8,19 @@ export default function PrivacyPage() {
   return (
     <LegalPage title="Privacy">
       <p>
-        {BRAND.name} is a local demo. We do not operate a production tenant or
-        collect employee data from third-party systems.
+        {BRAND.name} stores the account details and workspace records your
+        organisation enters (for example time off, expenses and documents) so
+        the product can work. Access is limited by your role and enforced in
+        the database.
       </p>
       <p>
-        Demo auth and agent conversations may be stored in your browser
-        (localStorage) on this device only. Clear site data to remove them.
+        The demo workspace contains fake data only. Anyone with the published
+        demo credential can read and change it; do not enter real personal
+        data there.
       </p>
       <p>
-        Optional analytics are disabled until you accept cookies. See Cookie
-        Preferences for controls.
+        We use essential cookies to keep you signed in. Optional analytics are
+        disabled until you accept cookies. See Cookie Preferences for controls.
       </p>
     </LegalPage>
   );

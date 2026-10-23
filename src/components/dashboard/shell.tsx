@@ -137,7 +137,7 @@ function NavLinks({
 
 function DashboardChrome({ children }: { children: React.ReactNode }) {
   const { session, signOut } = useAuth();
-  const { state, openInboxCount } = useMock();
+  const { state, openInboxCount, syncError, clearSyncError } = useMock();
   const { toggle: toggleAgent, open: agentOpen } = useAgentUi();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -149,8 +149,8 @@ function DashboardChrome({ children }: { children: React.ReactNode }) {
     state.installedApps.includes(a.id),
   ).map((a) => ({ href: a.href, label: a.navLabel, exact: false as const }));
 
-  function onLogout() {
-    signOut();
+  async function onLogout() {
+    await signOut();
     router.replace("/login");
   }
 
@@ -163,7 +163,9 @@ function DashboardChrome({ children }: { children: React.ReactNode }) {
         >
           {BRAND.name}
         </Link>
-        <p className="mt-1 text-xs text-[var(--fg-muted)]">{TENANT.name}</p>
+        <p className="mt-1 text-xs text-[var(--fg-muted)]">
+          {session?.user.tenantName || TENANT.name}
+        </p>
         <p className="text-xs font-medium text-[var(--accent)]">
           {roleLabel(role)}
         </p>
@@ -186,7 +188,6 @@ function DashboardChrome({ children }: { children: React.ReactNode }) {
             <p className="hidden truncate text-sm text-[var(--fg-muted)] sm:block">
               {session?.user.name}
               {session?.user.demo ? " · Demo" : ""}
-              {session?.ssoDemo ? " · SSO" : ""}
             </p>
           </div>
           <div className="flex min-w-0 items-center justify-end gap-1 sm:gap-2">
@@ -246,6 +247,25 @@ function DashboardChrome({ children }: { children: React.ReactNode }) {
             </Button>
           </div>
         </header>
+
+        {syncError ? (
+          <div
+            role="alert"
+            className="flex items-start justify-between gap-3 border-b border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800"
+          >
+            <p>
+              Some changes could not be saved ({syncError}). Your view was refreshed
+              from the server.
+            </p>
+            <button
+              type="button"
+              className="shrink-0 underline"
+              onClick={clearSyncError}
+            >
+              Dismiss
+            </button>
+          </div>
+        ) : null}
 
         {mobileOpen ? (
           <div className="max-h-[70vh] overflow-y-auto border-b border-[var(--border)] bg-[var(--surface)] p-4 lg:hidden">

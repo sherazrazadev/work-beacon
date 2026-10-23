@@ -52,7 +52,7 @@ export function RecruitingView() {
           Recruiting
         </h1>
         <p className="mt-1 text-sm text-[var(--fg-muted)]">
-          Kanban persists in this browser. Hire Jordan Hale to open onboarding.
+          Kanban is saved to your workspace. Hire Jordan Hale to open onboarding.
         </p>
       </div>
 

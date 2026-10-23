@@ -25,7 +25,7 @@ export function ClockView() {
           Time clock
         </h1>
         <p className="mt-1 text-sm text-[var(--fg-muted)]">
-          Local timestamps only — demo punches stay in this browser.
+          Punches are saved to your workspace with the demo clock.
         </p>
       </div>
 

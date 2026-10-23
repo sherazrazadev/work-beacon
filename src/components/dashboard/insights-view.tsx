@@ -137,7 +137,7 @@ export function InsightsView() {
             Beacon Insights
           </h1>
           <p className="mt-1 text-sm text-[var(--fg-muted)]">
-            Live mock store — people, talent, time, and money vs plan.
+            Live workspace data — people, talent, time, and money vs plan.
           </p>
         </div>
         <Button type="button" size="sm" variant="secondary" onClick={exportCsv}>

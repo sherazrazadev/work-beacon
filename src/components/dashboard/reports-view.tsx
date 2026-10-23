@@ -31,7 +31,7 @@ export function ReportsView() {
         </h1>
         <p className="mt-1 text-sm text-[var(--fg-muted)]">
           Headcount, attrition, payroll register, expense age. CSV is generated
-          in this browser.
+          from the data you are permitted to see.
         </p>
       </div>
 

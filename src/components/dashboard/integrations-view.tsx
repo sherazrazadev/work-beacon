@@ -16,7 +16,7 @@ export function IntegrationsView() {
           Integrations
         </h1>
         <p className="mt-1 text-sm text-[var(--fg-muted)]">
-          Connect / disconnect stubs. Status is stored in this browser.
+          Connect / disconnect stubs. Connection status is saved to your workspace.
         </p>
       </div>
       <ul className="space-y-3">

@@ -56,4 +56,16 @@ See `PHASE-2-INDUSTRY.md` for research notes and gap map.
 | --- | --- | --- |
 | **EPIC-18** Learning ops | Assign / complete / certificates / team overdue + agent | ✅ Employee completes a course; Manager assigns; cert issued |
 
+## Phase 8 — Supabase backend
+
+Plan: `SUPABASE-PLAN.md`. No custom backend service; Supabase is the backend.
+
+| Epic | Deliver | Gate |
+| --- | --- | --- |
+| **EPIC-19** Supabase foundation | Local + hosted staging, `supabase/` scaffolding, typed clients, repository seam, CI | ⬜ `db:reset` green; CI runs; app unchanged |
+| **EPIC-20** Auth + tenancy | Supabase Auth, custom SMTP, tenants/memberships, `proxy.ts`, server route guard, one demo credential | ⬜ Unauthenticated `/dashboard` redirects on the server; forged localStorage grants nothing; real signup/reset emails arrive |
+| **EPIC-21** Authorization (RLS) | Helper functions, policies on every table, audit log, pgTAP | ⬜ Employee cannot read another worker's pay; tenant A cannot read tenant B; CI blocks tables without RLS |
+| **EPIC-22** Domain migration | All 55 store keys → Postgres in waves; local store deleted (no mock mode) | ⬜ EPIC-07…18 QA paths pass on Supabase per role; merges to `main` |
+| **EPIC-23** Agent, API, ops, launch | Agent under user session, real API keys, Storage, Realtime, backups, privacy, deploy, review | ⬜ Agent cannot exceed caller's permissions; no open High findings; **launch gate met (Pro, tested restore, SMTP)** |
+
 Expand an epic only after its gate passes. Flat ticket list: `../tickets.md`.

@@ -33,7 +33,7 @@ export function ProfileView() {
           Profile
         </h1>
         <p className="mt-1 text-sm text-[var(--fg-muted)]">
-          Personal info and emergency contacts — saved in localStorage.
+          Personal info and emergency contacts — saved to your account.
         </p>
       </div>
 

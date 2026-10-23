@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -13,12 +14,16 @@ import {
   MockStoreState,
   ProfileData,
   TimeOffRequest,
-  clearMockStore,
-  defaultMockStore,
-  hydrateMockStore,
-  readMockStore,
-  writeMockStore,
 } from "@/lib/mock";
+import { useAuth } from "@/components/auth/auth-provider";
+import {
+  RecordsWriter,
+  diffState,
+  emptyState,
+  loadRecords,
+  type OrdMap,
+} from "@/lib/data/records-repo";
+import { getSupabase } from "@/lib/supabase/client";
 import {
   SEED_EVENTS,
   SEED_PAY_STUBS,
@@ -101,6 +106,9 @@ import {
 
 type MockContextValue = {
   ready: boolean;
+  /** Set when a save was rejected or the network failed; data was reloaded from the server. */
+  syncError: string | null;
+  clearSyncError: () => void;
   state: MockStoreState;
   pto: { vacationHours: number; sickHours: number; personalHours: number };
   payStubs: typeof SEED_PAY_STUBS;
@@ -122,7 +130,7 @@ type MockContextValue = {
   decideApproval: (id: string, status: "Approved" | "Pending") => void;
   completeInboxTask: (id: string) => void;
   setFeatureFlags: (patch: Partial<FeatureFlags>) => void;
-  resetStore: () => void;
+  resetStore: () => Promise<string | null>;
   inboxForRole: (role: DemoRole, workerId?: string) => MockStoreState["inbox"];
   openInboxCount: (role: DemoRole, workerId?: string) => number;
   addJob: (job: Omit<JobReq, "id" | "status">) => void;
@@ -256,32 +264,84 @@ type MockContextValue = {
 const MockContext = createContext<MockContextValue | null>(null);
 
 export function MockProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<MockStoreState>(defaultMockStore);
-  const [ready, setReady] = useState(false);
+  const { session } = useAuth();
+  const userId = session?.user.id;
+  const tenantId = session?.user.tenantId;
+  const [state, setState] = useState<MockStoreState>(emptyState);
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
+  const ready = !!userId && loadedFor === userId;
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const stateRef = useRef<MockStoreState>(state);
+  const ordsRef = useRef<OrdMap>(new Map());
+  const writerRef = useRef<RecordsWriter | null>(null);
+  const reloadRef = useRef<() => Promise<void>>(async () => {});
 
+  // Load what this user may read (Postgres RLS decides). Reloads when the
+  // signed-in user changes, e.g. after a demo persona switch.
   useEffect(() => {
+    if (!userId || !tenantId) return;
+    let cancelled = false;
     const slow = process.env.NEXT_PUBLIC_SLOW_DASHBOARD === "1";
-    const timer = window.setTimeout(() => {
-      setState(readMockStore());
-      setReady(true);
-    }, slow ? 1200 : 0);
-    return () => window.clearTimeout(timer);
-  }, []);
+    const sb = getSupabase();
 
-  useEffect(() => {
-    if (state.assets && state.positions && state.hrCases) return;
-    const next = hydrateMockStore(state);
-    if (next === state) return;
-    setState(next);
-    writeMockStore(next);
-  }, [state]);
+    const apply = async () => {
+      const { state: next, ords } = await loadRecords(sb);
+      if (cancelled) return;
+      stateRef.current = next;
+      ordsRef.current = ords;
+      setState(next);
+    };
+
+    let writer: RecordsWriter;
+    writer = new RecordsWriter(sb, tenantId, (message) => {
+      setSyncError(message);
+      // Drop optimistic changes the server refused, waiting for queued writes to settle.
+      void writer
+        .idle()
+        .then(() => apply())
+        .catch(() => {});
+    });
+    reloadRef.current = apply;
+
+    const timer = window.setTimeout(
+      () => {
+        apply()
+          .then(() => {
+            if (cancelled) return;
+            writerRef.current = writer;
+            setLoadedFor(userId);
+          })
+          .catch((e: unknown) => {
+            if (cancelled) return;
+            const blank = emptyState();
+            stateRef.current = blank;
+            ordsRef.current = new Map();
+            setState(blank);
+            setSyncError(e instanceof Error ? e.message : "Could not load data");
+          });
+      },
+      slow ? 1200 : 0,
+    );
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      if (writerRef.current === writer) writerRef.current = null;
+    };
+  }, [userId, tenantId]);
+
+  const clearSyncError = useCallback(() => setSyncError(null), []);
 
   const persist = useCallback((updater: (prev: MockStoreState) => MockStoreState) => {
-    setState((prev) => {
-      const next = hydrateMockStore(updater(prev));
-      writeMockStore(next);
-      return next;
-    });
+    const writer = writerRef.current;
+    if (!writer) return; // not loaded yet: nothing to save against
+    const prev = stateRef.current;
+    const next = updater(prev);
+    if (next === prev) return;
+    const changes = diffState(prev, next, ordsRef.current);
+    stateRef.current = next;
+    setState(next);
+    writer.enqueue(changes);
   }, []);
 
   const addTimeOff = useCallback(
@@ -373,11 +433,16 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
     [persist],
   );
 
-  const resetStore = useCallback(() => {
-    clearMockStore();
-    const next = defaultMockStore();
-    writeMockStore(next);
-    setState(next);
+  /** Demo workspace only: server re-seeds the demo tenant, then we reload. */
+  const resetStore = useCallback(async () => {
+    await writerRef.current?.idle();
+    const res = await fetch("/api/demo/reset", { method: "POST" });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as { error?: string } | null;
+      return body?.error ?? "Reset failed.";
+    }
+    await reloadRef.current();
+    return null;
   }, []);
 
   const inboxForRole = useCallback(
@@ -1834,6 +1899,8 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<MockContextValue>(
     () => ({
       ready,
+      syncError,
+      clearSyncError,
       state,
       pto,
       payStubs: [...state.extraPayStubs, ...SEED_PAY_STUBS],
@@ -1927,6 +1994,8 @@ export function MockProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       ready,
+      syncError,
+      clearSyncError,
       state,
       pto,
       addTimeOff,
